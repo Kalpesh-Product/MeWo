@@ -448,14 +448,13 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
           setPending(false);
         }
       }}
-      className={startup ? "" : "space-y-[15px]"}
     >
       <input
         type="hidden"
         name="kind"
         value={startup ? "startup" : "contact"}
       />
-      <div className={startup ? "mb-[17.5px] grid gap-y-[17.5px] md:grid-cols-[49%_49%] md:gap-x-[18.85px]" : "grid gap-[15px] lg:grid-cols-2"}>
+      <div className={`mb-[17.5px] grid gap-y-[17.5px] md:grid-cols-[49%_49%] ${startup ? "md:gap-x-[18.85px]" : "md:gap-x-[13.85px]"}`}>
         {fields.map(([name, type]) => (
           <input
             key={name}
@@ -465,7 +464,7 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
             aria-label={name}
             required={["Name", "Email", "Phone"].includes(name)}
             maxLength={200}
-            className={`form-field ${startup ? "tracking-normal text-black" : ""}`}
+            className="form-field tracking-normal text-black"
           />
         ))}
       </div>
@@ -492,11 +491,11 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
         rows={10}
         required
         maxLength={10000}
-        className={`form-field ${startup ? "block h-[200px] resize-none tracking-normal text-black" : "resize-y"}`}
+        className="form-field block h-[200px] resize-none tracking-normal text-black"
       />
-      <div className={`text-center ${startup ? "mt-[88.4px]" : ""}`}>
+      <div className={`text-center ${startup ? "mt-[88.4px]" : "mt-[25.9px]"}`}>
         <button
-          className={`primary-button disabled:cursor-wait disabled:opacity-60 ${startup ? "border-2 border-black [border-style:outset] tracking-normal hover:bg-brand" : ""}`}
+          className="primary-button border-2 border-black [border-style:outset] tracking-normal hover:bg-brand disabled:cursor-wait disabled:opacity-60"
           type="submit"
           disabled={pending}
         >

@@ -80,12 +80,12 @@ function About() {
 }
 function Contact() {
   return (
-    <div className="grid gap-[30px] lg:grid-cols-3">
+    <div className="grid items-start gap-[30px] lg:grid-cols-3">
       <div className="lg:col-span-2">
-        <h2 className="mb-[25px] text-[28px] leading-tight font-bold text-brand">
+        <h2 className="mb-[17.5px] text-[25px] leading-[45.5px] font-bold text-brand">
           Have you any question?
         </h2>
-        <p className="mb-[35px] text-[15px]">
+        <p className="mb-[25px] text-[15px] leading-[27px]">
           Better yet, see us in person!
           <br />
           We love our customers and love making new friends, so feel free to
@@ -93,7 +93,7 @@ function Contact() {
         </p>
         <InquiryForm />
       </div>
-      <aside className="rounded-[5px] bg-[#fbfbfb] px-[30px] py-[55px]">
+      <aside className="rounded-[5px] bg-[#fbfbfb] px-[30px] py-[55px] [&_a]:text-[#007bff] [&_a:hover]:text-[#0056b3] [&_a:hover]:underline">
         {[
           [
             "ADDRESS :",
@@ -120,7 +120,7 @@ function Contact() {
             <Icon key="phone-icon" name="phone" />,
             <span key="call">
               <a href="tel:+918007126444">+91 80071 26444</a> /<br />
-              <a href="tel:+918104564129">+91 81045 64129</a>
+              <a href="tel:+918104564129" className="pl-[35px]">+91 81045 64129</a>
             </span>,
           ],
           [
@@ -129,14 +129,14 @@ function Contact() {
             "9:00 AM to 9:00 PM",
           ],
         ].map(([title, icon, value], i) => (
-          <div key={i} className="relative mb-[30px] pl-10 last:mb-0">
+          <div key={i} className={`relative pl-10 last:mb-0 ${i === 1 ? "mb-[17.5px]" : "mb-[30px]"}`}>
             <span
-              className="absolute top-0 left-0 text-xl text-brand"
+              className={`absolute top-[2px] left-[7.5px] text-[20px] leading-[20px] text-brand ${i === 2 ? "rotate-90" : ""}`}
               aria-hidden="true"
             >
               {icon}
             </span>
-            <h3 className="mb-[10px] text-[20px] leading-tight font-semibold text-brand">
+            <h3 className="mb-[10px] text-[20px] leading-[24.5px] font-bold text-brand">
               {title}
             </h3>
             <p className="text-[14px] opacity-80">{value}</p>
