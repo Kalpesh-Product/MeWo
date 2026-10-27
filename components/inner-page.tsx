@@ -160,7 +160,10 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
         {key === "press" && (
           <div className="grid items-start gap-x-[30px] gap-y-20 pt-20 md:grid-cols-3">
             {content.press.map((quote, i) => (
-              <figure key={i}>
+              <figure
+                key={i}
+                className={i === content.press.length - 1 ? "md:col-start-2" : undefined}
+              >
                 <img
                   className="mx-auto mb-5 w-full"
                   src={`/assets/img/press/press_${i + 1}.webp`}
