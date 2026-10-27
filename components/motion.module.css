@@ -78,6 +78,16 @@
   transform: translateY(0);
 }
 .galleryDialog {
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: white;
+  overflow: auto;
   opacity: 0;
   transition:
     opacity 0.16s ease,
@@ -85,7 +95,75 @@
     overlay 0.16s allow-discrete;
 }
 .galleryDialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 1;
+}
+.galleryDialog::backdrop { background: rgb(11 11 11 / 80%); }
+.galleryFigure { position: relative; margin: 0; line-height: 0; }
+.galleryImage {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100dvh;
+  padding: 40px 0;
+  cursor: pointer;
+  filter: drop-shadow(0 0 8px rgb(0 0 0 / 60%));
+}
+.galleryClose {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: -6px;
+  height: 44px;
+  padding: 0 6px;
+  color: white;
+  opacity: .65;
+  font: 28px/44px Arial, Baskerville, monospace;
+}
+.galleryClose:hover, .galleryClose:focus-visible,
+.galleryArrow:hover, .galleryArrow:focus-visible { opacity: 1; }
+.galleryCounter {
+  position: absolute;
+  right: 0;
+  bottom: 18px;
+  color: #ccc;
+  font-size: 12px;
+  line-height: 18px;
+}
+.galleryArrow {
+  position: fixed;
+  top: 50%;
+  width: 90px;
+  height: 110px;
+  margin-top: -55px;
+  padding: 0;
+  opacity: .65;
+}
+.galleryArrowLeft { left: 0; }
+.galleryArrowRight { right: 0; }
+.galleryArrow::before, .galleryArrow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  margin: 35px 0 0 25px;
+  border: medium inset transparent;
+}
+.galleryArrow::before { border-top-width: 21px; border-bottom-width: 21px; opacity: .7; }
+.galleryArrow::after { top: 8px; border-top-width: 13px; border-bottom-width: 13px; }
+.galleryArrowLeft::before { border-right: 27px solid #3f3f3f; }
+.galleryArrowLeft::after { margin-left: 31px; border-right: 17px solid white; }
+.galleryArrowRight::before { margin-left: 35px; border-left: 27px solid #3f3f3f; }
+.galleryArrowRight::after { margin-left: 39px; border-left: 17px solid white; }
+@media (max-width: 900px) {
+  .galleryArrow { transform: scale(.75); }
+  .galleryArrowLeft { transform-origin: left center; }
+  .galleryArrowRight { transform-origin: right center; }
 }
 .membershipDialog::backdrop,
 .galleryDialog::backdrop {

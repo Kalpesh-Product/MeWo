@@ -307,16 +307,30 @@ export function MembershipCards({ home = false }: { home?: boolean }) {
 }
 export function Gallery() {
   const [index, setIndex] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (!viewerOpen) return;
+    const { overflow, paddingRight } = document.body.style;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+    return () => {
+      document.body.style.overflow = overflow;
+      document.body.style.paddingRight = paddingRight;
+    };
+  }, [viewerOpen]);
   return (
     <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {content.gallery.map((src, i) => (
           <button
             key={src}
+            className="self-start"
             aria-label={`View workspace photo ${i + 1}`}
             onClick={() => {
               setIndex(i);
+              setViewerOpen(true);
               dialog.current?.showModal();
             }}
           >
@@ -326,7 +340,7 @@ export function Gallery() {
               width="600"
               height="400"
               loading="lazy"
-              className="aspect-[3/2] w-full object-cover transition-opacity hover:opacity-80"
+              className="h-auto w-full transition-opacity hover:opacity-80"
             />
           </button>
         ))}
@@ -334,6 +348,7 @@ export function Gallery() {
       <dialog
         ref={dialog}
         aria-label="Workspace photo viewer"
+        onClose={() => setViewerOpen(false)}
         onKeyDown={(e) => {
           if (e.key === "ArrowRight")
             setIndex((index + 1) % content.gallery.length);
@@ -345,23 +360,29 @@ export function Gallery() {
         onClick={(e) => {
           if (e.target === e.currentTarget) dialog.current?.close();
         }}
-        className={`${motion.galleryDialog} max-h-[95vh] w-[95vw] max-w-[1200px] bg-transparent p-8 text-white`}
+        className={motion.galleryDialog}
       >
+        <figure className={motion.galleryFigure}>
         <button
           autoFocus
-          className="absolute top-0 right-3 text-3xl"
+          className={motion.galleryClose}
           aria-label="Close photo viewer"
           onClick={() => dialog.current?.close()}
         >
           ×
         </button>
         <img
-          className="mx-auto max-h-[80vh] w-auto object-contain"
+          className={motion.galleryImage}
           src={content.gallery[index]}
           alt={`MeWo workspace ${index + 1}`}
+          onClick={() => setIndex((index + 1) % content.gallery.length)}
         />
-        <div className="mt-3 flex items-center justify-between">
+        <figcaption className={motion.galleryCounter}>
+          {index + 1} of {content.gallery.length}
+        </figcaption>
+        </figure>
           <button
+            className={`${motion.galleryArrow} ${motion.galleryArrowLeft}`}
             aria-label="Previous photo"
             onClick={() =>
               setIndex(
@@ -369,18 +390,15 @@ export function Gallery() {
               )
             }
           >
-            ❮
+            <span className="sr-only">Previous photo</span>
           </button>
-          <span>
-            {index + 1} / {content.gallery.length}
-          </span>
           <button
+            className={`${motion.galleryArrow} ${motion.galleryArrowRight}`}
             aria-label="Next photo"
             onClick={() => setIndex((index + 1) % content.gallery.length)}
           >
-            ❯
+            <span className="sr-only">Next photo</span>
           </button>
-        </div>
       </dialog>
     </>
   );
