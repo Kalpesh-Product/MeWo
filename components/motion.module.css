@@ -63,6 +63,23 @@
   margin-top: 12px;
 }
 
+@media (max-width: 767px) {
+  .mobileMenu,
+  .mobileMenu[data-open="true"] {
+    position: absolute;
+    top: 94px;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .mobileMenu {
+    display: none;
+  }
+}
+
 .membershipDialog {
   opacity: 0;
   transform: translateY(-25%);

@@ -28,7 +28,7 @@ export function Header() {
   const home = pathname === "/" || pathname === "/index.html";
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${scrolled ? "bg-ink py-[15px]" : `py-[25px] ${home ? "bg-transparent" : "bg-white lg:bg-ink"}`}`}
+      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 max-md:absolute max-md:py-[25px] ${home ? "max-md:bg-transparent" : "max-md:bg-white"} ${scrolled ? "bg-ink py-[15px]" : `py-[25px] ${home ? "bg-transparent" : "bg-white lg:bg-ink"}`}`}
     >
       <div className="site-container flex min-h-[70px] items-start justify-between lg:min-h-[78.67px]">
         <Link href="/" aria-label="MeWo home">
@@ -37,7 +37,7 @@ export function Header() {
             width="80"
             height="68"
             alt="MeWo"
-            className="h-auto w-[60px] py-[6px] max-md:py-1 md:w-[70px] lg:w-20"
+            className="h-auto w-[60px] py-[6px] md:w-[70px] lg:w-20"
           />
         </Link>
         <nav
@@ -59,15 +59,17 @@ export function Header() {
           </ul>
         </nav>
         <button
-          className="mt-[15px] flex h-9 w-[38px] flex-col items-center justify-center gap-[4px] rounded-[2px] bg-brand lg:hidden"
+          className="mt-[15px] block h-9 w-[38px] rounded-[3px] bg-brand px-2 pt-2 pb-[6px] font-[Arial,Helvetica,sans-serif] text-[18px] leading-[22px] font-bold text-white lg:hidden"
           aria-label={open ? "Close navigation" : "Open navigation"}
           aria-controls="mobile-navigation"
           aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
-          <span className="h-[3px] w-[22px] bg-white" />
-          <span className="h-[3px] w-[22px] bg-white" />
-          <span className="h-[3px] w-[22px] bg-white" />
+          {open ? "X" : <>
+            <span className="mt-[3px] block h-[3px] w-[22px] bg-white" />
+            <span className="mt-[3px] block h-[3px] w-[22px] bg-white" />
+            <span className="mt-[3px] block h-[3px] w-[22px] bg-white" />
+          </>}
         </button>
       </div>
       <nav
@@ -79,13 +81,13 @@ export function Header() {
         inert={!open}
       >
         <div className="min-h-0 overflow-hidden">
-          <ul className="max-h-[calc(100svh-120px)] overflow-y-auto bg-white shadow-xl">
+          <ul className="max-h-[calc(100svh-120px)] overflow-y-auto bg-[#0c1923]">
             {navigation.map(([label, url]) => (
-              <li key={url}>
+              <li key={url} className="border-t border-white/50 first:border-t-0">
                 <Link
                   href={url}
                   onClick={() => setOpen(false)}
-                  className="block border-b border-gray-100 px-5 py-3 text-[14px] text-ink hover:bg-gray-100"
+                  className="block px-[5%] py-[7px] text-[14px] leading-[25.2px] font-normal text-white uppercase hover:bg-white/10"
                 >
                   {label}
                 </Link>
