@@ -181,12 +181,12 @@ export function MembershipCards({ home = false }: { home?: boolean }) {
   return (
     <>
       <div
-        className={`grid gap-[30px] md:grid-cols-2 lg:grid-cols-3 ${home ? "items-stretch" : "items-start"}`}
+          className={`grid gap-[30px] md:grid-cols-4 lg:grid-cols-3 ${home ? "items-stretch max-lg:items-start" : "items-start"}`}
       >
         {memberTitles.slice(0, home ? 3 : 6).map((title, i) => (
           <article
             key={title}
-            className={`group overflow-hidden rounded-[10px] shadow-[0_0_20px_#ddd] transition-shadow duration-300 hover:shadow-[0_0_20px_#959595] ${home ? "flex h-full flex-col" : ""}`}
+            className={`group overflow-hidden rounded-[10px] shadow-[0_0_20px_#ddd] transition-shadow duration-300 hover:shadow-[0_0_20px_#959595] md:col-span-2 lg:col-span-1 md:max-lg:[&:nth-child(3n)]:col-start-2 ${home ? "flex h-full flex-col max-lg:h-auto" : ""}`}
           >
             <button
               onClick={() => show(i)}
@@ -205,7 +205,7 @@ export function MembershipCards({ home = false }: { home?: boolean }) {
               className={`p-5 pb-[30px] ${home ? "flex flex-1 flex-col" : ""}`}
             >
               <h2
-                  className="mb-[17.5px] text-[20px] leading-[1.25] font-bold"
+                  className="mb-[17.5px] text-[20px] leading-[1.25] max-md:leading-[1.5] font-bold"
               >
                 <button className="text-left" onClick={() => show(i)}>
                   {title}
@@ -322,7 +322,7 @@ export function Gallery() {
   }, [viewerOpen]);
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="mx-auto grid grid-cols-1 min-[576px]:max-w-[540px] md:max-w-[720px] md:grid-cols-3 lg:max-w-[960px] lg:grid-cols-4 xl:max-w-none">
         {content.gallery.map((src, i) => (
           <button
             key={src}
@@ -454,7 +454,7 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
         name="kind"
         value={startup ? "startup" : "contact"}
       />
-      <div className={`mb-[17.5px] grid gap-y-[17.5px] md:grid-cols-[49%_49%] ${startup ? "md:gap-x-[18.85px]" : "md:gap-x-[13.85px]"}`}>
+      <div className={`mb-[17.5px] grid gap-y-[17.5px] max-md:[&>input:nth-child(even)]:-mt-[2.5px] ${startup ? "md:max-xl:grid-cols-2 md:max-xl:gap-x-[18.85px] xl:grid-cols-[49%_49%] xl:gap-x-[18.85px]" : "xl:grid-cols-[49%_49%] xl:gap-x-[13.85px]"}`}>
         {fields.map(([name, type]) => (
           <input
             key={name}

@@ -28,7 +28,7 @@ export function Header() {
   const home = pathname === "/" || pathname === "/index.html";
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${scrolled ? "bg-ink py-[15px]" : `py-[15px] lg:py-[25px] ${home ? "bg-transparent" : "bg-white lg:bg-ink"}`}`}
+      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${scrolled ? "bg-ink py-[15px]" : `py-[25px] ${home ? "bg-transparent" : "bg-white lg:bg-ink"}`}`}
     >
       <div className="site-container flex min-h-[70px] items-start justify-between lg:min-h-[78.67px]">
         <Link href="/" aria-label="MeWo home">
@@ -37,7 +37,7 @@ export function Header() {
             width="80"
             height="68"
             alt="MeWo"
-            className="h-auto w-[60px] py-[6px] md:w-[70px] lg:w-20"
+            className="h-auto w-[60px] py-[6px] max-md:py-1 md:w-[70px] lg:w-20"
           />
         </Link>
         <nav
@@ -79,7 +79,7 @@ export function Header() {
         inert={!open}
       >
         <div className="min-h-0 overflow-hidden">
-          <ul className="bg-white shadow-xl">
+          <ul className="max-h-[calc(100svh-120px)] overflow-y-auto bg-white shadow-xl">
             {navigation.map(([label, url]) => (
               <li key={url}>
                 <Link
@@ -144,10 +144,10 @@ function Subscribe() {
 export function Footer() {
   const pathname = usePathname();
   const heading =
-      "relative mb-[17.5px] pb-5 text-[24px] leading-[45.5px] font-normal text-white after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-5 after:bg-white";
+      "relative mb-[17.5px] pb-5 text-[24px] leading-[45.5px] max-md:text-[20px] max-md:leading-[31.5px] font-normal text-white after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-5 after:bg-white";
   return (
     <footer className="bg-ink text-[14px] text-white">
-      <div className="site-container grid gap-[30px] py-[100px] md:grid-cols-2 lg:grid-cols-4">
+        <div className="site-container grid gap-[30px] py-[100px] max-md:gap-y-[50px] max-md:py-20 md:grid-cols-2 lg:grid-cols-4">
         <section>
           <h2 className={heading}>About us</h2>
           <p className="text-white/70">{content.intro}</p>

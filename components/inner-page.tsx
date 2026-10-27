@@ -80,9 +80,9 @@ function About() {
 }
 function Contact() {
   return (
-    <div className="grid items-start gap-[30px] lg:grid-cols-3">
+    <div className="grid items-start gap-[30px] max-lg:gap-y-[41.6px] lg:grid-cols-3">
       <div className="lg:col-span-2">
-        <h2 className="mb-[17.5px] text-[25px] leading-[45.5px] font-bold text-brand">
+        <h2 className="mb-[17.5px] text-[25px] leading-[45.5px] max-md:text-[20px] max-md:leading-[31.5px] font-bold text-brand">
           Have you any question?
         </h2>
         <p className="mb-[25px] text-[15px] leading-[27px]">
@@ -136,7 +136,7 @@ function Contact() {
             >
               {icon}
             </span>
-            <h3 className="mb-[10px] text-[20px] leading-[24.5px] font-bold text-brand">
+            <h3 className="mb-[10px] text-[20px] leading-[24.5px] max-md:leading-[21px] font-bold text-brand">
               {title}
             </h3>
             <p className="text-[14px] opacity-80">{value}</p>
@@ -153,12 +153,12 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
       <div
         className={`inner-page ${key === "gallery" ? "w-full" : "site-container"}`}
       >
-        <h1 className="page-heading">{pages[key].toUpperCase()}</h1>
+        <h1 className="page-heading max-md:mb-[50px]">{pages[key].toUpperCase()}</h1>
         {key === "about" && <About />}
         {key === "membership" && <MembershipCards />}
         {key === "gallery" && <Gallery />}
         {key === "press" && (
-          <div className="grid items-start gap-x-[30px] gap-y-20 pt-20 md:grid-cols-3">
+          <div className="grid items-start gap-x-[30px] gap-y-20 pt-20 min-[576px]:grid-cols-2 md:grid-cols-3">
             {content.press.map((quote, i) => (
               <figure
                 key={i}
@@ -172,7 +172,7 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
                   height="400"
                   loading="lazy"
                 />
-                <figcaption className="text-center text-[17px] leading-[1.8] text-[#999] italic">
+                <figcaption className="text-center text-[17px] leading-[1.8] text-[#999] italic max-md:mx-auto max-md:max-w-[285px] max-md:text-[15px]">
                   {quote}
                 </figcaption>
               </figure>
@@ -193,7 +193,7 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
       </div>
       {key === "contact" && (
         <>
-          <div className="bg-brand py-[95px] text-center text-[30px] font-semibold text-white md:text-[40px]">
+          <div className="bg-brand py-[95px] text-center text-[30px] font-semibold text-white max-md:text-[20px] md:text-[40px]">
             <Icon name="location" /> Find Our Location
           </div>
           <iframe
@@ -201,7 +201,7 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
             src="https://maps.google.com/maps?q=MeWo%20Meetings%20Co-Working%20Dempo%20Trade%20Center%20Patto%20Panjim%20Goa&z=14&output=embed"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            className="h-[600px] w-full border-0"
+            className="h-[600px] w-full border-0 max-xl:aspect-[7/3] max-xl:h-auto"
           />
         </>
       )}

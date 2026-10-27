@@ -25,16 +25,16 @@ export default function Home() {
   return (
     <main id="main-content">
       <Hero />
-      <section className="site-container py-[100px]">
-        <div className="mb-20 text-center">
-          <h2 className="mb-[15px] text-[32px] leading-tight font-bold text-brand md:text-[40px]">
+      <section className="site-container py-[100px] max-md:pt-20 max-md:pb-[95px]">
+        <div className="mb-20 text-center max-md:mb-[50px]">
+          <h2 className="mb-[15px] text-[32px] leading-tight font-bold text-brand max-md:mb-[17.5px] max-md:pb-[15px] max-md:text-[25px] max-md:leading-[28px] md:text-[40px]">
             Our Amenities
           </h2>
-          <p className="text-[15px] text-[#555]">
+          <p className="text-[15px] text-[#555] max-md:mx-auto max-md:max-w-[285px]">
             A FULLY SERVICED PREMIER WORK NEST
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-x-[30px] gap-y-20 md:grid-cols-4 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-x-[30px] gap-y-20 md:grid-cols-3 lg:grid-cols-6">
           {amenities.map((title, i) => (
             <div key={title} className="text-center tracking-[.5px]">
               <img
@@ -54,11 +54,11 @@ export default function Home() {
       </section>
       <section className="bg-[#f5f5f5] py-[100px]">
         <div className="site-container">
-          <div className="mb-20 text-center">
-            <h2 className="mb-[15px] text-[32px] leading-tight font-bold text-brand md:text-[40px]">
+          <div className="mb-20 text-center max-md:mb-[50px]">
+            <h2 className="mb-[15px] text-[32px] leading-tight font-bold text-brand max-md:mb-[17.5px] max-md:pb-[15px] max-md:text-[25px] max-md:leading-[28px] md:text-[40px]">
               Our Membership
             </h2>
-            <p className="mx-auto max-w-[530px] text-[15px] text-[#555]">
+            <p className="mx-auto max-w-[530px] text-[15px] text-[#555] max-md:max-w-[285px]">
               EXCLUSIVE CO-WORKING MEMBERSHIPS FOR STARTUPS &amp; CORPORATES!
             </p>
           </div>
