@@ -181,7 +181,7 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
         )}
         {key === "startup" && (
           <>
-            <p className="mb-20 text-[15px] tracking-[1px] text-[#555]">
+            <p className="mb-20 pt-[10px] text-[15px] leading-[27px] tracking-[1px] text-[#555]">
               We are constructing an energetic and sustainable Startup Ecosystem
               in Goa and we welcome any Individual or Startup to reach out to us
               for any support.

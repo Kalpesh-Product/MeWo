@@ -405,6 +405,7 @@ export function Gallery() {
 }
 export function InquiryForm({ startup = false }: { startup?: boolean }) {
   const [status, setStatus] = useState("");
+  const [fileName, setFileName] = useState("");
   const [pending, setPending] = useState(false);
   const fields = startup
     ? [
@@ -435,7 +436,10 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
           });
           const result = await response.json();
           setStatus(result.message);
-          if (response.ok) form.reset();
+          if (response.ok) {
+            form.reset();
+            setFileName("");
+          }
         } catch {
           setStatus(
             "Unable to send. Please email response@biznest.co.in or call +91 80071 26444.",
@@ -444,14 +448,14 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
           setPending(false);
         }
       }}
-      className="space-y-[15px]"
+      className={startup ? "" : "space-y-[15px]"}
     >
       <input
         type="hidden"
         name="kind"
         value={startup ? "startup" : "contact"}
       />
-      <div className="grid gap-[15px] lg:grid-cols-2">
+      <div className={startup ? "mb-[17.5px] grid gap-y-[17.5px] md:grid-cols-[49%_49%] md:gap-x-[18.85px]" : "grid gap-[15px] lg:grid-cols-2"}>
         {fields.map(([name, type]) => (
           <input
             key={name}
@@ -461,13 +465,13 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
             aria-label={name}
             required={["Name", "Email", "Phone"].includes(name)}
             maxLength={200}
-            className="form-field"
+            className={`form-field ${startup ? "tracking-normal text-black" : ""}`}
           />
         ))}
       </div>
       {startup && (
-        <label className="flex items-center gap-5 text-[14px] text-[#777]">
-          <span className="relative rounded bg-brand px-5 py-2 text-white">
+        <label className="mb-[17.5px] flex items-center gap-[3.85px] text-[12px] leading-[21.6px] tracking-normal text-[#777]">
+          <span className="relative shrink-0 overflow-hidden rounded-[3px] bg-[#44709c] px-[10px] py-[5px] font-[Arial,sans-serif] text-[13px] leading-[19.5px] tracking-[0.1px] text-white">
             BROWSE
             <input
               aria-label="Attach Corporate Presentation"
@@ -475,10 +479,10 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
               type="file"
               accept=".pdf,.ppt,.pptx"
               className="absolute inset-0 w-full cursor-pointer opacity-0"
-              onChange={(e) => setStatus(e.target.files?.[0]?.name || "")}
+              onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
             />
           </span>
-          <span>Attach Corporate Presentation</span>
+          <span>{fileName || "Attach Corporate Presentation"}</span>
         </label>
       )}
       <textarea
@@ -488,18 +492,18 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
         rows={10}
         required
         maxLength={10000}
-        className="form-field resize-y"
+        className={`form-field ${startup ? "block h-[200px] resize-none tracking-normal text-black" : "resize-y"}`}
       />
-      <div className={`text-center ${startup ? "pt-[65px]" : ""}`}>
+      <div className={`text-center ${startup ? "mt-[88.4px]" : ""}`}>
         <button
-          className="primary-button disabled:cursor-wait disabled:opacity-60"
+          className={`primary-button disabled:cursor-wait disabled:opacity-60 ${startup ? "border-2 border-black [border-style:outset] tracking-normal hover:bg-brand" : ""}`}
           type="submit"
           disabled={pending}
         >
           {pending ? "Submitting…" : "Submit"}
         </button>
       </div>
-      <p role="status" className="text-center text-[14px] text-brand">
+      <p role="status" className={`text-center text-[14px] text-brand ${status ? "" : "hidden"}`}>
         {status}
       </p>
     </form>
