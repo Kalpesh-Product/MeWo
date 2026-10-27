@@ -19,33 +19,35 @@ const pages: Record<string, string> = {
 function About() {
   return (
     <>
-      <section className="mb-[150px] text-[15px] text-[#555]">
-        <h2 className="mb-[17.5px] pb-[15px] text-[28px] leading-[31.5px] font-bold text-brand">
+      <section className="mb-[180px] text-[15px] text-[#555] md:mb-[230px]">
+        <h2 className="mb-[17.5px] pb-[15px] text-[28px] leading-[31.5px] font-bold text-brand max-[576px]:text-[24.5px] max-[576px]:leading-[28px]">
           MeWo - Meetings &amp; CoWorking
         </h2>
         <p className="mb-20">{content.intro}</p>
-        <h3 className="mb-[17.5px] pb-[15px] text-[24px] leading-[26.25px] font-normal text-brand">
+        <h3 className="mb-[17.5px] pb-[15px] text-[24px] leading-[21px] font-normal text-brand">
           MeWo&apos;s Primary Goal:
         </h3>
-        <ul className="mb-20 list-disc space-y-[10px] pl-10">
+        <ul className="mb-[50px] list-disc pl-10 md:mb-20">
           {content.goals.map((goal) => (
-            <li key={goal}>{goal}</li>
+            <li key={goal} className="mt-[10px]">
+              {goal}
+            </li>
           ))}
         </ul>
         <p>{content.aboutParagraphs[1]}</p>
       </section>
-      <section className="space-y-20">
+      <section className="space-y-[50px] md:space-y-20">
         {["Co-Working Zone", "Hybrid Cafe Zone", "Meetings Zone"].map(
           (zone, i) => (
             <article
               key={zone}
-              className="grid items-start gap-[30px] lg:grid-cols-2"
+              className="grid items-start gap-x-[30px] lg:grid-cols-2"
             >
-              <div>
-                <h3 className="mb-[17.5px] pb-[15px] text-[24px] leading-[26.25px] font-normal text-brand">
+              <div className={i === 1 ? "" : "mb-20"}>
+                <h3 className="mb-[17.5px] pb-[15px] text-[24px] leading-[21px] font-normal text-brand">
                   {zone}:
                 </h3>
-                <p className="text-[15px] tracking-[.03rem] text-[#555]">
+                <p className="text-[15px] tracking-[.42px] text-[#555]">
                   {content.aboutParagraphs[i === 2 ? 4 : i + 2]}
                 </p>
                 {i === 1 && (
