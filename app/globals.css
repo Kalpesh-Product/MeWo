@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-brand: #21507d;
+  --color-ink: #051922;
+  --font-sans: "Poppins", sans-serif;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 62rem;
+  --breakpoint-xl: 75rem;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    color: #051922;
+    font-size: 16px;
+    line-height: 1.8;
+    letter-spacing: 0.1px;
+    background: white;
+  }
+  button,
+  a,
+  input,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    cursor: pointer;
+  }
+  a,
+  button {
+    transition:
+      color 0.2s,
+      background-color 0.2s,
+      box-shadow 0.2s;
+  }
+  :focus-visible {
+    outline: 3px solid #39b9d3;
+    outline-offset: 4px;
+  }
+  dialog {
+    margin: auto;
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 0.65);
+  }
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer components {
+  .site-container {
+    @apply mx-auto w-full px-[15px] min-[576px]:max-w-[540px] md:max-w-[720px] lg:max-w-[960px] xl:max-w-[1140px];
+  }
+  .primary-button {
+    @apply inline-block rounded-full bg-brand px-5 py-2.5 text-[14px] text-white hover:bg-[#365c80];
+  }
+  .page-heading {
+    @apply mb-20 text-center text-[35px] leading-[38.5px] font-bold text-brand min-[576px]:text-[42px] min-[576px]:leading-[45.5px] md:text-[56px] md:leading-[56px];
+  }
+  .inner-page {
+    @apply pt-[210px] pb-[150px] max-md:pt-[160px] max-md:pb-[100px];
+  }
+  .form-field {
+    @apply w-full rounded-[3px] border border-[#ddd] bg-white p-[15px] text-[14px] placeholder:text-[#777] focus:border-brand;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(../public/fonts/poppins-0.woff2) format("truetype");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(../public/fonts/poppins-1.woff2) format("truetype");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(../public/fonts/poppins-2.woff2) format("truetype");
+}
+@font-face {
+  font-family: "Poppins";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(../public/fonts/poppins-3.woff2) format("truetype");
+}
+@font-face {
+  font-family: "MeWo Brands";
+  src: url("../public/assets/webfonts/fa-brands-400.woff2") format("woff2");
+  font-display: block;
+}
+@font-face {
+  font-family: "MeWo Solid";
+  src: url("../public/assets/webfonts/fa-solid-900.woff2") format("woff2");
+  font-display: block;
+}
+.brand-icon {
+  font-family: "MeWo Brands";
+  font-style: normal;
+}
+.solid-icon {
+  font-family: "MeWo Solid";
+  font-style: normal;
+  font-weight: 900;
 }

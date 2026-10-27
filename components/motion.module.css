@@ -1,0 +1,222 @@
+.heroCaption[data-phase="moving"] > * {
+  opacity: 0;
+  animation: none;
+}
+
+.heroCaption[data-phase="enter"] > * {
+  animation: fadeInUp 1s ease both;
+}
+
+.heroCaption[data-phase="enter"] > h1 {
+  animation-delay: 0.3s;
+}
+
+.heroCaption[data-phase="enter"] > div {
+  animation-delay: 0.5s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navLink {
+  position: relative;
+  text-decoration: none;
+}
+
+.navLink::after {
+  position: absolute;
+  content: "";
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: currentColor;
+  transition:
+    width 0.3s ease,
+    left 0.3s ease;
+}
+
+.navLink:hover::after {
+  left: 0;
+  width: 100%;
+}
+
+.mobileMenu {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  transition:
+    grid-template-rows 0.4s ease,
+    margin-top 0.4s ease;
+}
+
+.mobileMenu[data-open="true"] {
+  grid-template-rows: 1fr;
+  margin-top: 12px;
+}
+
+.membershipDialog {
+  opacity: 0;
+  transform: translateY(-25%);
+  transition:
+    opacity 0.15s linear,
+    transform 0.3s ease-out,
+    display 0.3s allow-discrete,
+    overlay 0.3s allow-discrete;
+}
+
+.membershipDialog[open] {
+  opacity: 1;
+  transform: translateY(0);
+}
+.galleryDialog {
+  opacity: 0;
+  transition:
+    opacity 0.16s ease,
+    display 0.16s allow-discrete,
+    overlay 0.16s allow-discrete;
+}
+.galleryDialog[open] {
+  opacity: 1;
+}
+.membershipDialog::backdrop,
+.galleryDialog::backdrop {
+  opacity: 0;
+  transition:
+    opacity 0.15s linear,
+    display 0.3s allow-discrete,
+    overlay 0.3s allow-discrete;
+}
+.membershipDialog[open]::backdrop,
+.galleryDialog[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .membershipDialog[open] {
+    opacity: 0;
+    transform: translateY(-25%);
+  }
+  .galleryDialog[open] {
+    opacity: 0;
+  }
+  .membershipDialog[open]::backdrop,
+  .galleryDialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.pressViewport {
+  --logo-step: calc(100% + 30px);
+}
+.pressTrack {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  transition: transform 0.25s ease;
+}
+.pressTrack[data-instant="true"] {
+  transition: none;
+}
+.pressItem {
+  flex: 0 0 calc(var(--logo-step) - 30px);
+  min-width: 0;
+}
+@media (min-width: 600px) {
+  .pressViewport {
+    --logo-step: calc((100% + 30px) / 3);
+  }
+}
+@media (min-width: 1000px) {
+  .pressViewport {
+    --logo-step: calc((100% + 30px) / 4);
+  }
+}
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 1111;
+  background: white;
+  transition: opacity 1s cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+.loader[data-fading="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+.loaderInner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%, -50%);
+}
+.circle {
+  position: relative;
+  width: 8vmax;
+  height: 8vmax;
+  border-right: 4px solid #3acde7;
+  border-radius: 50%;
+  animation: spinRight 0.8s linear infinite;
+}
+.circle::before,
+.circle::after {
+  content: "";
+  display: block;
+  position: absolute;
+  border-radius: 50%;
+}
+.circle::before {
+  width: 6vmax;
+  height: 6vmax;
+  top: calc(50% - 3vmax);
+  left: calc(50% - 3vmax);
+  border-left: 3px solid #1089b9;
+  animation: spinLeft 0.8s linear infinite;
+}
+.circle::after {
+  width: 4vmax;
+  height: 4vmax;
+  top: calc(50% - 2vmax);
+  left: calc(50% - 2vmax);
+  border-right: 2px solid #3acde7;
+}
+@keyframes spinRight {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes spinLeft {
+  to {
+    transform: rotate(720deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroCaption[data-phase] > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .pressTrack,
+  .mobileMenu,
+  .navLink::after,
+  .loader,
+  .membershipDialog,
+  .galleryDialog {
+    transition: none;
+  }
+  .circle,
+  .circle::before {
+    animation: none;
+  }
+}

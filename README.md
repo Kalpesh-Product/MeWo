@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MeWo website
 
-## Getting Started
+A Next.js App Router recreation of the public MeWo website, styled with Tailwind CSS v4. Original photos, branding, amenity artwork and Poppins fonts are served locally.
 
-First, run the development server:
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3012. Production: `npm run build`, then `npm start` (also port 3012).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Home, About, Membership, Gallery, Press, Startup Support and Contact. Original `/about.html`-style URLs and extensionless aliases are supported. Membership dialogs, the hero slideshow, responsive navigation, gallery keyboard navigation and the location map are included.
 
-## Learn More
+## Form delivery
 
-To learn more about Next.js, take a look at the following resources:
+Contact, startup support and newsletter forms POST to `/api/inquiry`. Set `MEWO_INQUIRY_ENDPOINT` in `.env.local` to your trusted HTTPS form delivery service. The server forwards multipart form data, including startup presentation attachments, and reports success only after the service accepts the submission. Without an endpoint, the forms clearly explain that online submissions are unavailable and show the existing email/phone contact details. The original website's PHP handlers are not part of this project.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Presentations are limited to 10 MB. Before public launch, configure your form service's spam protection and delivery rules. Do not place service secrets in `NEXT_PUBLIC_` environment variables.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Checks
 
-## Deploy on Vercel
+```bash
+npm run build
+npm run lint
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Shared components live in `components/`; original page content is in `lib/content.json`.

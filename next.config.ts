@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  rewrites() {
+    return [
+      { source: "/index.html", destination: "/" },
+      ...["about", "membership", "gallery", "press", "startup", "contact"].map(
+        (page) => ({ source: `/${page}`, destination: `/${page}.html` }),
+      ),
+    ];
+  },
   experimental: {
     agentFeedback: true,
   },
@@ -11,7 +18,6 @@ const nextConfig: NextConfig = {
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
       },
     },
   },
