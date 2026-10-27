@@ -205,16 +205,16 @@ export function MembershipCards({ home = false }: { home?: boolean }) {
               className={`p-5 pb-[30px] ${home ? "flex flex-1 flex-col" : ""}`}
             >
               <h2
-                className={`text-[20px] leading-[1.25] ${home ? "mb-[17.5px] font-bold" : "mb-5 font-semibold"}`}
+                  className="mb-[17.5px] text-[20px] leading-[1.25] font-bold"
               >
                 <button className="text-left" onClick={() => show(i)}>
                   {title}
                 </button>
               </h2>
               <p
-                className={`text-[14px] leading-[1.8] text-[#555] ${home ? "mb-[17.5px] min-h-[50.4px] flex-1" : "mb-[14px]"} ${home && i > 0 ? "tracking-normal" : ""}`}
+                  className={`mb-[17.5px] text-[14px] leading-[1.8] text-[#555] ${home ? "min-h-[50.4px] flex-1" : ""} ${i > 0 && i < 3 ? "tracking-normal" : ""}`}
               >
-                {home && i === 0 ? (
+                  {i === 0 ? (
                   <>
                     Accommodating Big &amp; Small Teams.
                     <br />
@@ -224,7 +224,7 @@ export function MembershipCards({ home = false }: { home?: boolean }) {
                   content.members[i]
                 )}
               </p>
-              <div className="flex items-center justify-between gap-2">
+                <div className={`flex justify-between gap-2 ${home ? "items-center" : "h-[40.2px] items-start"}`}>
                 <button
                   className={`text-[14px] leading-[1.8] hover:text-brand ${home ? "font-normal" : "mt-[15px] font-bold"}`}
                   onClick={() => show(i)}
