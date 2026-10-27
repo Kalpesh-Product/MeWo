@@ -72,7 +72,7 @@ export default function Home() {
       </section>
       <section
         aria-label="Featured in the press"
-        className="bg-[#f5f5f5] py-[50px]"
+        className="bg-white py-[50px]"
       >
         <PressStrip />
       </section>

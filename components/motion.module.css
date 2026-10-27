@@ -116,6 +116,12 @@
 
 .pressViewport {
   --logo-step: calc(100% + 30px);
+  cursor: grab;
+  touch-action: pan-y;
+  user-select: none;
+}
+.pressViewport[data-dragging="true"] {
+  cursor: grabbing;
 }
 .pressTrack {
   display: flex;
@@ -129,7 +135,10 @@
 .pressItem {
   flex: 0 0 calc(var(--logo-step) - 30px);
   min-width: 0;
+  cursor: inherit;
+  transition: opacity 0.3s ease;
 }
+.pressItem:hover { opacity: 0.7; }
 @media (min-width: 600px) {
   .pressViewport {
     --logo-step: calc((100% + 30px) / 3);

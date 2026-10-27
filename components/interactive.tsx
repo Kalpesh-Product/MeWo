@@ -489,52 +489,189 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
 }
 
 export function PressStrip() {
-  const [position, setPosition] = useState(0);
+  // Keep a complete copy on either side so dragging can loop in both directions.
+  const [position, setPosition] = useState(8);
   const [animated, setAnimated] = useState(true);
   const [paused, setPaused] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [settling, setSettling] = useState(false);
+  const track = useRef<HTMLDivElement>(null);
+  const suppressClick = useRef(false);
+  const pointer = useRef<{
+    id: number;
+    x: number;
+    y: number;
+    step: number;
+    baseOffset: number;
+    limit: number;
+    horizontal: boolean;
+  } | null>(null);
+
+  const finishTransition = useCallback(() => {
+    if (position < 8 || position >= 16) {
+      setAnimated(false);
+      setPosition(8 + ((((position - 8) % 8) + 8) % 8));
+    }
+    setSettling(false);
+  }, [position]);
+
   useEffect(() => {
-    if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    if (
+      paused ||
+      dragging ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
       return;
-    const timer = setInterval(() => setPosition((n) => n + 1), 5000);
+    const timer = setInterval(() => {
+      setPosition((current) => current + 1);
+      setSettling(true);
+    }, 5000);
     return () => clearInterval(timer);
-  }, [paused]);
+  }, [paused, dragging]);
+
   useEffect(() => {
     if (animated) return;
-    const frame = requestAnimationFrame(() => setAnimated(true));
-    return () => cancelAnimationFrame(frame);
+    let secondFrame = 0;
+    const frame = requestAnimationFrame(() => {
+      secondFrame = requestAnimationFrame(() => setAnimated(true));
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(secondFrame);
+    };
   }, [animated]);
+
+  useEffect(() => {
+    if (!settling) return;
+    // Also settle when reduced motion disables transitionend, or the pointer did not move.
+    const timer = setTimeout(finishTransition, 300);
+    return () => clearTimeout(timer);
+  }, [settling, position, finishTransition]);
+
+  const endDrag = (
+    event: React.PointerEvent<HTMLDivElement>,
+    cancelled = false,
+  ) => {
+    const start = pointer.current;
+    if (!start || start.id !== event.pointerId) return;
+    pointer.current = null;
+    const offset = Math.max(
+      -start.limit,
+      Math.min(start.limit, event.clientX - start.x + start.baseOffset),
+    );
+    let steps = 0;
+    if (!cancelled && start.horizontal && Math.abs(offset) > 10) {
+      steps = Math.round(-offset / start.step) || Math.sign(-offset);
+    }
+    setAnimated(true);
+    setPosition((current) => current + steps);
+    setDragOffset(0);
+    setDragging(false);
+    setSettling(true);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
   return (
     <div
       className={`site-container overflow-hidden ${motion.pressViewport}`}
-      onFocusCapture={() => setPaused(true)}
+      data-dragging={dragging}
+      onFocusCapture={() => {
+        if (!pointer.current) setPaused(true);
+      }}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget))
           setPaused(false);
       }}
+      onDragStart={(event) => event.preventDefault()}
+      onClickCapture={(event) => {
+        if (suppressClick.current && event.detail > 0) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
+      onPointerDown={(event) => {
+        if (
+          event.button !== 0 ||
+          !event.isPrimary ||
+          !track.current?.firstElementChild
+        )
+          return;
+        const step =
+          track.current.firstElementChild.getBoundingClientRect().width + 30;
+        const translateX = new DOMMatrixReadOnly(
+          getComputedStyle(track.current).transform,
+        ).m41;
+        const baseOffset = translateX + position * step;
+        pointer.current = {
+          id: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+          step,
+          baseOffset,
+          limit:
+            step * Math.max(1, Math.round(track.current.clientWidth / step)),
+          horizontal: false,
+        };
+        suppressClick.current = false;
+        setPaused(false);
+        setSettling(false);
+        setDragOffset(baseOffset);
+        setDragging(true);
+      }}
+      onPointerMove={(event) => {
+        const start = pointer.current;
+        if (!start || start.id !== event.pointerId) return;
+        const dx = event.clientX - start.x;
+        const dy = event.clientY - start.y;
+        if (!start.horizontal) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) < 5) return;
+          if (Math.abs(dy) > Math.abs(dx)) {
+            endDrag(event, true);
+            return;
+          }
+          start.horizontal = true;
+          suppressClick.current = true;
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }
+        event.preventDefault();
+        setDragOffset(
+          Math.max(-start.limit, Math.min(start.limit, dx + start.baseOffset)),
+        );
+      }}
+      onPointerUp={(event) => endDrag(event)}
+      onPointerCancel={(event) => endDrag(event, true)}
+      onLostPointerCapture={(event) => endDrag(event, true)}
+      onPointerLeave={(event) => {
+        if (pointer.current && !pointer.current.horizontal)
+          endDrag(event, true);
+      }}
     >
       <div
+        ref={track}
         className={motion.pressTrack}
-        data-instant={!animated}
+        data-instant={!animated || dragging}
         style={{
-          transform: `translate3d(calc(var(--logo-step) * ${-position}),0,0)`,
+          transform: `translate3d(calc(var(--logo-step) * ${-position} + ${dragOffset}px),0,0)`,
         }}
         onTransitionEnd={(event) => {
-          if (event.target !== event.currentTarget || position !== 8) return;
-          setAnimated(false);
-          setPosition(0);
+          if (event.target === event.currentTarget) finishTransition();
         }}
       >
-        {Array.from({ length: 12 }, (_, slot) => (
+        {Array.from({ length: 24 }, (_, slot) => (
           <Link
             href="/press.html"
             key={slot}
-            aria-hidden={slot >= 8}
-            inert={slot >= 8}
+            draggable={false}
+            aria-hidden={slot < 8 || slot >= 16}
+            inert={slot < 8 || slot >= 16}
             className={motion.pressItem}
           >
             <img
               width="180"
               height="100"
+              draggable={false}
               src={`/assets/img/press/press_${(slot % 8) + 1}.webp`}
               alt={`Press coverage ${(slot % 8) + 1}`}
               className="mx-auto max-h-[130px] w-full object-contain"
