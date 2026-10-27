@@ -120,7 +120,7 @@ function Subscribe() {
     >
       <div className="flex items-start gap-[3.85px]">
         <input
-          className="min-w-0 w-[78%] shrink-0 rounded-l-[5px] bg-[#012738] p-[15px] text-[14px] text-white"
+            className="min-w-0 w-[78%] shrink-0 rounded-l-[5px] bg-[#012738] p-[15px] text-[14px] tracking-normal text-white placeholder:text-[#757575] placeholder:opacity-100"
           type="email"
           name="email"
           placeholder="Email"
@@ -144,7 +144,7 @@ function Subscribe() {
 export function Footer() {
   const pathname = usePathname();
   const heading =
-    "relative mb-[17.5px] pb-5 text-[24px] leading-[45.5px] font-normal text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-5 after:bg-white";
+      "relative mb-[17.5px] pb-5 text-[24px] leading-[45.5px] font-normal text-white after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-5 after:bg-white";
   return (
     <footer className="bg-ink text-[14px] text-white">
       <div className="site-container grid gap-[30px] py-[100px] md:grid-cols-2 lg:grid-cols-4">
