@@ -151,7 +151,7 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
   return (
     <main id="main-content">
       <div
-        className={`inner-page ${key === "gallery" ? "w-full" : "site-container"}`}
+        className={`inner-page ${key === "gallery" ? "w-full" : "site-container"} ${key === "membership" ? "max-md:pb-[130px]" : ""}`}
       >
         <h1 className="page-heading max-md:mb-[50px]">{pages[key].toUpperCase()}</h1>
         {key === "about" && <About />}
