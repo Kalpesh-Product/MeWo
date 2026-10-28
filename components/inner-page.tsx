@@ -158,14 +158,14 @@ export function InnerPage({ page: key }: { page: keyof typeof pages }) {
         {key === "membership" && <MembershipCards />}
         {key === "gallery" && <Gallery />}
         {key === "press" && (
-          <div className="grid items-start gap-x-[30px] gap-y-20 pt-20 min-[576px]:grid-cols-2 md:grid-cols-3">
+          <div className="grid items-start gap-x-[30px] gap-y-20 pt-20 max-md:gap-y-[50px] max-md:pt-[50px] min-[576px]:grid-cols-2 md:grid-cols-3">
             {content.press.map((quote, i) => (
               <figure
                 key={i}
                 className={i === content.press.length - 1 ? "md:col-start-2" : undefined}
               >
                 <img
-                  className="mx-auto mb-5 w-full"
+                  className="mx-auto mb-5 w-full max-md:w-auto max-md:max-w-full"
                   src={`/assets/img/press/press_${i + 1}.webp`}
                   alt={`MeWo press feature ${i + 1}`}
                   width="600"
