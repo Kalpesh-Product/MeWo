@@ -663,9 +663,13 @@ export function PressStrip() {
       }}
       onPointerUp={(event) => endDrag(event)}
       onPointerCancel={(event) => endDrag(event, true)}
-      onLostPointerCapture={(event) => endDrag(event, true)}
+      onLostPointerCapture={(event) => {
+        // Touch starts with implicit capture on the logo link. Transferring it
+        // to the viewport emits a bubbling capture-loss event from that link.
+        if (event.target === event.currentTarget) endDrag(event, true);
+      }}
       onPointerLeave={(event) => {
-        if (pointer.current && !pointer.current.horizontal)
+        if (event.pointerType === "mouse" && pointer.current && !pointer.current.horizontal)
           endDrag(event, true);
       }}
     >
