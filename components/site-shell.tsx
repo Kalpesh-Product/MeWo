@@ -195,7 +195,7 @@ export function Footer() {
         </section>
         <section className="max-md:mb-[50px]">
           <h2 className={heading}>Subscribe</h2>
-          <p className="mb-5 text-white/70">
+          <p className="mb-5 text-white/70 lg:mb-[17.5px]">
             {pathname === "/" || pathname === "/index.html"
               ? "Subscribe to to hear from us about our co-working & community promotions and events."
               : "Subscribe to our mailing list to get the latest updates."}
