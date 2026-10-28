@@ -8,11 +8,12 @@ export const metadata: Metadata = {
   description:
     "MeWo - Meetings & Co-Working. A fully serviced premier work nest in Patto, Panjim, Goa. Private offices, desks, meeting rooms and virtual offices.",
   icons: {
-    icon: [
-      { url: "/favicon.ico?v=mewo", type: "image/x-icon" },
-      { url: "/icon.png?v=mewo", type: "image/png" },
-    ],
-    shortcut: "/favicon.ico?v=mewo",
+    icon: {
+      url: "/assets/img/favicon.webp?v=mewo-original",
+      type: "image/webp",
+      sizes: "25x16",
+    },
+    shortcut: "/assets/img/favicon.webp?v=mewo-original",
   },
 };
 export default function RootLayout({
