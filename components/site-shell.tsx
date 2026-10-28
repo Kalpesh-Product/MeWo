@@ -137,7 +137,7 @@ function Subscribe() {
           {<Icon name="send" />}
         </button>
       </div>
-      <p role="status" className="mt-3 text-xs text-white/70">
+      <p role="status" className={`mt-3 text-xs text-white/70 ${message ? "" : "max-md:hidden"}`}>
         {message}
       </p>
     </form>
@@ -193,7 +193,7 @@ export function Footer() {
             ))}
           </ul>
         </section>
-        <section>
+        <section className="max-md:mb-[50px]">
           <h2 className={heading}>Subscribe</h2>
           <p className="mb-5 text-white/70">
             {pathname === "/" || pathname === "/index.html"
@@ -205,7 +205,7 @@ export function Footer() {
       </div>
       <div className="border-t border-[#232a35]">
         <div className="site-container grid gap-x-[30px] lg:grid-cols-2">
-          <p className="py-4 text-center text-[15px] leading-[1.8] text-white opacity-70 lg:text-left">
+          <p className="py-4 text-center text-[15px] leading-[1.8] text-white opacity-70 max-md:pb-0 lg:text-left">
             Copyright © 2024-26 DEMPO BIZ Nest LLP - All Rights Reserved.
             Privacy Policy l Terms &amp; Conditions Powered by{" "}
             <a
