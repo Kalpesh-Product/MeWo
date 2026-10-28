@@ -146,7 +146,7 @@ function Subscribe() {
 export function Footer() {
   const pathname = usePathname();
   const heading =
-      "relative mb-[17.5px] pb-5 text-[24px] leading-[45.5px] max-md:text-[20px] max-md:leading-[31.5px] font-normal text-white after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-5 after:bg-white";
+      "relative mb-[17.5px] pb-5 text-[24px] leading-[45.5px] max-md:text-[20px] max-md:leading-[31.5px] font-normal text-white after:absolute after:bottom-0 after:left-0 after:h-[1.5px] after:w-5 after:bg-white max-md:after:h-0 max-md:after:border-b-2 max-md:after:border-white";
   return (
     <footer className="bg-ink text-[14px] text-white">
         <div className="site-container grid gap-[30px] py-[100px] max-md:gap-y-[50px] max-md:py-20 md:grid-cols-2 lg:grid-cols-4">
