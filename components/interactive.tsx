@@ -426,6 +426,7 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
+        if (pending) return;
         setPending(true);
         setStatus("");
         const form = e.currentTarget;
@@ -454,6 +455,7 @@ export function InquiryForm({ startup = false }: { startup?: boolean }) {
         name="kind"
         value={startup ? "startup" : "contact"}
       />
+      <input type="text" name="fax_number" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
       <div className={`mb-[17.5px] grid gap-y-[17.5px] max-md:[&>input:nth-child(even)]:-mt-[2.5px] ${startup ? "md:max-xl:grid-cols-2 md:max-xl:gap-x-[18.85px] xl:grid-cols-[49%_49%] xl:gap-x-[18.85px]" : "xl:grid-cols-[49%_49%] xl:gap-x-[13.85px]"}`}>
         {fields.map(([name, type]) => (
           <input

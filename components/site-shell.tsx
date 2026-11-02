@@ -101,10 +101,13 @@ export function Header() {
 }
 function Subscribe() {
   const [message, setMessage] = useState("");
+    const [pending, setPending] = useState(false);
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
+          if (pending) return;
+          setPending(true);
         const form = e.currentTarget;
         setMessage("Submitting…");
         try {
@@ -117,6 +120,8 @@ function Subscribe() {
           if (response.ok) form.reset();
         } catch {
           setMessage("Please email response@biznest.co.in to subscribe.");
+          } finally {
+            setPending(false);
         }
       }}
     >
@@ -130,9 +135,11 @@ function Subscribe() {
           required
         />
         <input type="hidden" name="kind" value="subscription" />
+        <input type="text" name="fax_number" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
         <button
           className="w-1/5 shrink-0 rounded-r-[3px] bg-[#012738] py-[14px] text-white transition-colors duration-300 hover:bg-[#365c80] hover:text-ink"
           aria-label="Subscribe"
+            disabled={pending}
         >
           {<Icon name="send" />}
         </button>
