@@ -8,7 +8,7 @@
     "start": "next start -p 3012",
     "lint": "eslint",
     "db:setup": "tsx scripts/setup-db.ts",
-    "test": "tsx --test tests/inquiry-validation.test.ts tests/env.test.ts",
+    "test": "tsx --test tests/inquiry-validation.test.ts tests/env.test.ts tests/submissions-reader.test.ts",
     "test:integration": "tsx --test tests/inquiry-storage.test.ts",
     "test:http": "tsx --test tests/inquiry-http.test.ts"
   },

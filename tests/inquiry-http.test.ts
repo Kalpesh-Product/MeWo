@@ -38,6 +38,50 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
       const record = await db.collection(collections.submissions).findOne({ source: "startup", "fields.email": email });
       assert.ok(record?.fields.presentation.fileId);
     });
+    await t.test("read API rejects unauthenticated requests and unapproved browser origins", async () => {
+      const endpoint = "http://localhost:3012/api/submissions";
+      assert.equal((await fetch(endpoint)).status, 401);
+      assert.equal((await fetch(endpoint, { headers: { Authorization: "Bearer invalid" } })).status, 401);
+      assert.equal((await fetch(endpoint, { headers: { Origin: "https://unrelated.example" } })).status, 403);
+      const preflight = await fetch(endpoint, { method: "OPTIONS", headers: { Origin: "http://localhost:3012", "Access-Control-Request-Method": "GET", "Access-Control-Request-Headers": "authorization" } });
+      assert.equal(preflight.status, 204);
+      assert.equal(preflight.headers.get("Access-Control-Allow-Origin"), "http://localhost:3012");
+      assert.match(preflight.headers.get("Access-Control-Allow-Headers") || "", /Authorization/);
+    });
+    await t.test("read API returns flat table rows, counts, filters and stable pagination", async () => {
+      assert.ok(process.env.MEWO_SUBMISSIONS_API_KEY, "Configure the read API key before running HTTP tests.");
+      const headers = { Authorization: `Bearer ${process.env.MEWO_SUBMISSIONS_API_KEY}` };
+      const endpoint = "http://localhost:3012/api/submissions";
+      const response = await fetch(`${endpoint}?${new URLSearchParams({ search: email, pageSize: "2", sortBy: "source", sortOrder: "asc" })}`, { headers });
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get("Cache-Control") || "", /no-store/);
+      const first = await response.json();
+      assert.equal(first.data.length, 2);
+      assert.equal(first.pagination.filteredTotal, 3);
+      assert.equal(first.pagination.hasNextPage, true);
+      const second = await (await fetch(`${endpoint}?${new URLSearchParams({ search: email, pageSize: "2", page: "2", sortBy: "source", sortOrder: "asc" })}`, { headers })).json();
+      assert.equal(second.data.length, 1);
+      assert.equal(second.pagination.hasNextPage, false);
+      const rows = [...first.data, ...second.data];
+      assert.equal(new Set(rows.map((row) => row.id)).size, 3);
+      assert.deepEqual(rows.map((row) => row.source), ["contact", "startup", "subscription"]);
+      for (const row of rows) {
+        assert.equal(row.email, email);
+        assert.equal(row.fields, undefined);
+        assert.equal(row._id, undefined);
+        assert.ok(!Number.isNaN(Date.parse(row.createdAt)));
+      }
+      assert.equal(rows[1].presentation.filename, "verification.pdf");
+      assert.equal(rows[1].presentation.sha256, undefined);
+      assert.equal(rows[2].name, null);
+      const filtered = await (await fetch(`${endpoint}?${new URLSearchParams({ search: email, source: "startup", status: "new" })}`, { headers })).json();
+      assert.equal(filtered.pagination.filteredTotal, 1);
+      assert.equal(filtered.data[0].source, "startup");
+      const literal = await (await fetch(`${endpoint}?${new URLSearchParams({ search: `${email}.*` })}`, { headers })).json();
+      assert.equal(literal.data.length, 0);
+      assert.equal((await fetch(`${endpoint}?sortBy=$where`, { headers })).status, 400);
+      assert.equal((await fetch(`${endpoint}?pageSize=101`, { headers })).status, 400);
+    });
     await t.test("invalid fields and attachments do not insert records", async () => {
       assert.equal((await submit("contact", { phone: "bad" })).status, 422);
       assert.equal((await submit("startup", {}, new File(["not a pdf"], "bad.pdf"))).status, 415);

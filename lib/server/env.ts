@@ -1,6 +1,13 @@
 import { z } from "zod";
 
 const positiveInteger = (fallback: number, max: number) => z.coerce.number().int().min(1).max(max).default(fallback);
+const origins = z.string().default("").transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean))
+  .refine((values) => values.every((origin) => {
+    try {
+      const url = new URL(origin);
+      return ["http:", "https:"].includes(url.protocol) && url.origin === origin;
+    } catch { return false; }
+  }));
 const schema = z.object({
   MONGODB_URI: z.string().trim().regex(/^mongodb(?:\+srv)?:\/\//),
   MONGODB_DB: z.string().trim().regex(/^[a-zA-Z0-9_-]+$/),
@@ -8,13 +15,9 @@ const schema = z.object({
   MONGODB_SERVER_SELECTION_TIMEOUT_MS: positiveInteger(5000, 300000),
   MONGODB_CONNECT_TIMEOUT_MS: positiveInteger(5000, 300000),
   MONGODB_SOCKET_TIMEOUT_MS: positiveInteger(15000, 300000),
-  MEWO_ALLOWED_ORIGINS: z.string().default("").transform((value) => value.split(",").map((origin) => origin.trim()).filter(Boolean))
-    .refine((origins) => origins.every((origin) => {
-      try {
-        const url = new URL(origin);
-        return ["http:", "https:"].includes(url.protocol) && url.origin === origin;
-      } catch { return false; }
-    })),
+  MEWO_ALLOWED_ORIGINS: origins,
+  MEWO_SUBMISSIONS_API_KEY: z.union([z.literal(""), z.string().min(32).max(512)]).default(""),
+  MEWO_SUBMISSIONS_ALLOWED_ORIGINS: origins,
 });
 
 // Import this module only from server code. Never include connection strings or

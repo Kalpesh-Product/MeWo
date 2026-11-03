@@ -73,6 +73,10 @@ db.submissions.find({ "fields.email": "example@example.com" })
 
 For deployment, set an authenticated database URI with access restricted to this app's database, keep credentials server-side, and configure backups. Do not put MongoDB credentials in `NEXT_PUBLIC_` variables. An authenticated staff interface can be added separately.
 
+## Read API for external tables
+
+`GET /api/submissions` provides flat table rows with pagination, source/status filters, text search and sorting. It requires `Authorization: Bearer <MEWO_SUBMISSIONS_API_KEY>`. The private key is configured in `.env`; `.env.example` documents the read API settings. Keep the key in the external project's backend and authorize its dashboard users there. No public read access is enabled. See [API documentation and table adapters](docs/submissions-api.md) for response fields, request examples, deployment access and DataTables/AG Grid mapping.
+
 ## Checks
 
 ```bash
