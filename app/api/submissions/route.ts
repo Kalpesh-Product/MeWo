@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     }
     let query;
     try { query = parseSubmissionsQuery(new URL(request.url).searchParams); }
-    catch { return NextResponse.json({ message: "Invalid query. Use page (1–10000), pageSize (1–100), source, status, search (max 100), sortBy and sortOrder (asc/desc)." }, { status: 400, headers }); }
+    catch { return NextResponse.json({ message: "Invalid query. Use page (1–10000), pageSize (1–100), kind or source (contact/startup/subscription), status, search (max 100), sortBy and sortOrder (asc/desc). If both kind and source are supplied, they must match." }, { status: 400, headers }); }
     const result = await readSubmissions(await getDatabase(), query);
     return NextResponse.json(result, { headers });
   } catch (error) {

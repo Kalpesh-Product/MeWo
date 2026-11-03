@@ -12,6 +12,7 @@ const querySchema = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(25),
   source: z.enum(["contact", "startup", "subscription"]).optional(),
+  kind: z.enum(["contact", "startup", "subscription"]).optional(),
   status: z.enum(["new", "in_progress", "resolved", "subscribed", "unsubscribed"]).optional(),
   search: z.string().trim().max(100).default(""),
   sortBy: z.enum(["createdAt", "updatedAt", "source", "status", "name", "email", "phone", "subject", "startupName"]).default("createdAt"),
@@ -24,7 +25,9 @@ export function parseSubmissionsQuery(parameters: URLSearchParams) {
     if (parameters.getAll(key).length !== 1) throw new Error("Duplicate query parameters are not supported.");
     values[key] = value;
   }
-  return querySchema.parse(values);
+  const { kind, ...query } = querySchema.parse(values);
+  if (kind && query.source && kind !== query.source) throw new Error("kind and source must match when both are provided.");
+  return { ...query, ...(kind ? { source: kind } : {}) };
 }
 
 export function validReadToken(header: string | null, expected: string) {

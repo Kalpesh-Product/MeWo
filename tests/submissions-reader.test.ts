@@ -22,3 +22,15 @@ test("read query rejects unbounded pagination and arbitrary database operators",
     assert.throws(() => parseSubmissionsQuery(new URLSearchParams(query)));
   }
 });
+
+test("kind filters form type while retaining the source alias", () => {
+  for (const kind of ["contact", "startup", "subscription"]) {
+    const query = parseSubmissionsQuery(new URLSearchParams({ kind }));
+    assert.equal(query.source, kind);
+    assert.deepEqual(query, parseSubmissionsQuery(new URLSearchParams({ source: kind })));
+    assert.deepEqual(query, parseSubmissionsQuery(new URLSearchParams({ kind, source: kind })));
+  }
+  for (const query of ["kind=unknown", "kind=", "kind=contact&kind=startup", "kind=contact&source=startup"]) {
+    assert.throws(() => parseSubmissionsQuery(new URLSearchParams(query)));
+  }
+});

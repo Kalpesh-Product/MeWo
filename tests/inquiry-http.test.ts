@@ -77,6 +77,16 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
       const filtered = await (await fetch(`${endpoint}?${new URLSearchParams({ search: email, source: "startup", status: "new" })}`, { headers })).json();
       assert.equal(filtered.pagination.filteredTotal, 1);
       assert.equal(filtered.data[0].source, "startup");
+      for (const kind of ["contact", "startup", "subscription"]) {
+        const response = await fetch(`${endpoint}?${new URLSearchParams({ search: email, kind })}`, { headers });
+        assert.equal(response.status, 200);
+        const result = await response.json();
+        assert.equal(result.pagination.filteredTotal, 1);
+        assert.equal(result.data.length, 1);
+        assert.equal(result.data[0].source, kind);
+      }
+      assert.equal((await fetch(`${endpoint}?kind=contact&source=startup`, { headers })).status, 400);
+      assert.equal((await fetch(`${endpoint}?kind=unknown`, { headers })).status, 400);
       const literal = await (await fetch(`${endpoint}?${new URLSearchParams({ search: `${email}.*` })}`, { headers })).json();
       assert.equal(literal.data.length, 0);
       assert.equal((await fetch(`${endpoint}?sortBy=$where`, { headers })).status, 400);

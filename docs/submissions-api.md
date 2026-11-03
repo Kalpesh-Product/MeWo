@@ -18,7 +18,8 @@ The recommended integration is **table UI → external project's authenticated b
 | --- | --- | --- |
 | `page` | `1` | Integer, 1–10000 |
 | `pageSize` | `25` | Integer, 1–100 |
-| `source` | All | `contact`, `startup`, `subscription` |
+| `kind` | All | `contact`, `startup`, `subscription` |
+| `source` | All | Backward-compatible alias for `kind`; if both are provided, they must match |
 | `status` | All | `new`, `in_progress`, `resolved`, `subscribed`, `unsubscribed` |
 | `search` | Empty | Literal, case-insensitive text, up to 100 characters; searches form text fields |
 | `sortBy` | `createdAt` | `createdAt`, `updatedAt`, `source`, `status`, `name`, `email`, `phone`, `subject`, `startupName` |
@@ -26,7 +27,9 @@ The recommended integration is **table UI → external project's authenticated b
 
 Unknown parameters, duplicate parameters and invalid values return 400. Sorting uses the document ID as a stable tie-breaker. Responses are uncached. Counts and rows are separate database reads, so they can change as new submissions arrive.
 
-Example: `/api/submissions?source=startup&page=1&pageSize=25&sortBy=createdAt&sortOrder=desc`
+Examples: `/api/submissions?kind=contact`, `/api/submissions?kind=startup`, `/api/submissions?kind=subscription`. Omit `kind` to return all form types.
+
+With pagination: `/api/submissions?kind=startup&page=1&pageSize=25&sortBy=createdAt&sortOrder=desc`
 
 ## Response
 
@@ -68,7 +71,7 @@ All rows have the same keys. Missing source-specific fields are `null`. IDs are 
 ```javascript
 const url = new URL('/api/submissions', process.env.MEWO_API_BASE_URL);
 url.search = new URLSearchParams({
-  source: 'startup', page: '1', pageSize: '25', sortBy: 'createdAt', sortOrder: 'desc'
+  kind: 'startup', page: '1', pageSize: '25', sortBy: 'createdAt', sortOrder: 'desc'
 }).toString();
 
 const response = await fetch(url, {
