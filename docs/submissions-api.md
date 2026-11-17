@@ -39,6 +39,7 @@ With pagination: `/api/submissions?kind=startup&page=1&pageSize=25&sortBy=create
     {
       "id": "507f1f77bcf86cd799439011",
       "source": "contact",
+      "sourceCompany": "MeWo",
       "status": "new",
       "name": "Example Name",
       "email": "example@example.com",

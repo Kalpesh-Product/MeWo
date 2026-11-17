@@ -66,6 +66,7 @@ export async function readSubmissions(db: Db, query: ReturnType<typeof parseSubm
     const fields = record.fields;
     return {
       id: record._id.toHexString(), source: record.source, status: record.status,
+      sourceCompany: "MeWo",
       name: fields.name ?? null, email: fields.email, phone: fields.phone ?? null,
       subject: fields.subject ?? null, message: fields.message ?? null,
       startupName: fields.startupName ?? null, websiteUrl: fields.websiteUrl ?? null,
