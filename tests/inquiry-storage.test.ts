@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { loadEnvConfig } from "@next/env";
 import { test } from "node:test";
-import { GridFSBucket, MongoClient } from "mongodb";
-import { initializeDatabase, collections, presentationBucket } from "../lib/server/mongo-schema";
+import { MongoClient } from "mongodb";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { initializeDatabase, collections } from "../lib/server/mongo-schema";
 import { checkSubmissionRate, saveInquiry } from "../lib/server/inquiry-storage";
 import { InquiryError, parseInquiry, parsePresentation } from "../lib/server/inquiry-validation";
 import { migrateSubmissions } from "../lib/server/migrate-submissions";
@@ -36,7 +37,18 @@ test("MongoDB persistence and indexes (isolated temporary database)", async (t) 
       await Promise.all(Array.from({ length: 12 }, () => saveInquiry(db, { kind: "subscription", email: "subscriber@example.com" })));
       assert.equal(await db.collection(collections.submissions).countDocuments({ source: "subscription" }), 1);
     });
-    await t.test("startup presentation is stored privately in GridFS and round-trips", async () => {
+    await t.test("startup presentation uploads to S3 and MongoDB stores its link", async (subtest) => {
+      const previousKey = process.env.AWS_ACCESS_KEY_ID;
+      const previousSecret = process.env.AWS_SECRET_ACCESS_KEY;
+      process.env.AWS_ACCESS_KEY_ID = "test";
+      process.env.AWS_SECRET_ACCESS_KEY = "test";
+      subtest.after(() => {
+        if (previousKey === undefined) delete process.env.AWS_ACCESS_KEY_ID;
+        else process.env.AWS_ACCESS_KEY_ID = previousKey;
+        if (previousSecret === undefined) delete process.env.AWS_SECRET_ACCESS_KEY;
+        else process.env.AWS_SECRET_ACCESS_KEY = previousSecret;
+      });
+      const send = subtest.mock.method(S3Client.prototype, "send", async () => ({}));
       data.set("kind", "startup"); data.set("startup_name", "Test Startup");
       const bytes = Buffer.from("%PDF-1.7\nTest presentation\n%%EOF");
       data.set("presentation", new File([bytes], "deck.pdf", { type: "application/pdf" }));
@@ -45,11 +57,14 @@ test("MongoDB persistence and indexes (isolated temporary database)", async (t) 
       const record = await db.collection(collections.submissions).findOne({ source: "startup", "fields.email": startup.email });
       assert.equal(record?.fields.startupName, "Test Startup");
       assert.equal(record?.fields.presentation.size, bytes.length);
-      const bucket = new GridFSBucket(db, { bucketName: presentationBucket });
-      const chunks: Buffer[] = [];
-      for await (const chunk of bucket.openDownloadStream(record!.fields.presentation.fileId)) chunks.push(chunk);
-      assert.deepEqual(Buffer.concat(chunks), bytes);
-      assert.equal((await bucket.find({ _id: record!.fields.presentation.fileId }).next())?.metadata?.submissionId.toString(), record!._id.toString());
+      assert.ok(record);
+      assert.equal(send.mock.callCount(), 1);
+      const command = send.mock.calls[0].arguments[0] as PutObjectCommand;
+      assert.ok(command instanceof PutObjectCommand);
+      assert.equal(command.input.Bucket, "wonov-aws-s3-storage");
+      assert.equal(command.input.Key, `wono/BizNest/New MeWo Website/Attachments/${record._id}/file.pdf`);
+      assert.deepEqual(command.input.Body, bytes);
+      assert.equal(decodeURIComponent(new URL(record.fields.presentation.presentationLink).pathname), "/" + command.input.Key);
     });
     await t.test("database validator rejects malformed direct writes", async () => {
       const invalid = (error: unknown) => typeof error === "object" && error !== null && "code" in error && error.code === 121;

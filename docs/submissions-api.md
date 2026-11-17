@@ -65,7 +65,7 @@ With pagination: `/api/submissions?kind=startup&page=1&pageSize=25&sortBy=create
 }
 ```
 
-All rows have the same keys. Missing source-specific fields are `null`. IDs are strings; dates are UTC ISO strings. A presentation contains `{ "id", "filename", "mimeType", "size" }`, with size in bytes. File contents and private storage checksums are excluded. `total` counts all submissions; `filteredTotal` counts rows matching the current filters. An empty result has `data: []` and `totalPages: 0`.
+All rows have the same keys. Missing source-specific fields are `null`. IDs are strings; dates are UTC ISO strings. A presentation contains `{ "id", "filename", "mimeType", "size", "presentationLink" }`, with size in bytes. File contents and private storage checksums are excluded. `total` counts all submissions; `filteredTotal` counts rows matching the current filters. An empty result has `data: []` and `totalPages: 0`.
 
 ## Fetch from another project's backend
 
@@ -97,3 +97,7 @@ This is a library-independent API; it does not directly implement DataTables' or
 Render submitted text as plain text in table cells, including names, notes and filenames. Do not insert form values as HTML. Only create clickable website links after checking the URL uses HTTP(S).
 
 Errors return `{ "message": "..." }`: 400 invalid query, 401 invalid credentials, 403 rejected browser origin, 503 configuration/database failure. GET responses include `X-Request-Id` for tracing and `Cache-Control: private, no-store`.
+
+### Presentation storage
+
+Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in the server's `.env` to enable presentation uploads. The S3 prefix is `wono/BizNest/New MeWo Website/Attachments/` in `wonov-aws-s3-storage`. The API returns the private object URL as `presentation.presentationLink`. Legacy presentations have a null link until copied. Run `npx tsx scripts/migrate-presentations.ts` to count eligible records, and add `--apply` to copy validated files and save their links. The migration keeps the original GridFS objects.

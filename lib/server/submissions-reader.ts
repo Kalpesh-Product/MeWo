@@ -53,7 +53,7 @@ export async function readSubmissions(db: Db, query: ReturnType<typeof parseSubm
     "fields.name": 1, "fields.email": 1, "fields.phone": 1, "fields.subject": 1, "fields.message": 1,
     "fields.startupName": 1, "fields.websiteUrl": 1, "fields.linkedinProfileUrl": 1,
     "fields.presentation.fileId": 1, "fields.presentation.filename": 1,
-    "fields.presentation.mimeType": 1, "fields.presentation.size": 1,
+    "fields.presentation.mimeType": 1, "fields.presentation.size": 1, "fields.presentation.presentationLink": 1,
   };
   const [total, filteredTotal, documents] = await Promise.all([
     collection.countDocuments({}, { maxTimeMS: 5000 }),
@@ -74,6 +74,7 @@ export async function readSubmissions(db: Db, query: ReturnType<typeof parseSubm
       presentation: fields.presentation ? {
         id: fields.presentation.fileId.toHexString(), filename: fields.presentation.filename,
         mimeType: fields.presentation.mimeType, size: fields.presentation.size,
+        presentationLink: fields.presentation.presentationLink ?? null,
       } : null,
       createdAt: record.createdAt.toISOString(), updatedAt: record.updatedAt.toISOString(),
     };

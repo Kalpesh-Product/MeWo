@@ -39,6 +39,7 @@ export async function initializeDatabase(db: Db) {
         required: ["fileId", "filename", "mimeType", "size", "sha256"],
         properties: {
           fileId: { bsonType: "objectId" }, filename: { bsonType: "string" },
+          presentationLink: { bsonType: "string", maxLength: 2048 },
           mimeType: { bsonType: "string" }, size: { bsonType: ["int", "long", "double"] }, sha256: { bsonType: "string" },
         },
       },
@@ -63,6 +64,16 @@ export async function initializeDatabase(db: Db) {
       branch("subscription", ["email"], ["subscribed", "unsubscribed"], { email: inquiry.email }),
     ],
   });
+  const [existing] = await db.listCollections({ name: collections.submissions }, { nameOnly: false }).toArray();
+  const validator = existing?.options?.validator;
+  const startupFields = validator?.$jsonSchema?.oneOf?.find(
+    (branch: Document) => branch.properties?.source?.enum?.[0] === "startup",
+  )?.properties?.fields?.properties;
+  const presentationProperties = startupFields?.presentation?.properties;
+  if (presentationProperties && !presentationProperties.presentationLink) {
+    presentationProperties.presentationLink = fields.presentation.properties.presentationLink;
+    await db.command({ collMod: collections.submissions, validator });
+  }
   await createCollection(db, collections.limits);
   await createCollection(db, `${presentationBucket}.files`);
   await createCollection(db, `${presentationBucket}.chunks`);

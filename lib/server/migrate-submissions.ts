@@ -8,6 +8,13 @@ const legacy = [
   { name: "newsletter_subscriptions", source: "subscription", fields: ["email"] },
 ] as const;
 
+function legacyComparable(record: Document | null) {
+  if (!record?.fields?.presentation?.presentationLink) return record;
+  const presentation = { ...record.fields.presentation };
+  delete presentation.presentationLink;
+  return { ...record, fields: { ...record.fields, presentation } };
+}
+
 // Preserve IDs so existing GridFS submission references remain valid. Keep legacy
 // records as a rollback copy; never silently overwrite a conflicting target.
 export async function migrateSubmissions(db: Db) {
@@ -25,11 +32,11 @@ export async function migrateSubmissions(db: Db) {
       };
       const target = db.collection(collections.submissions);
       const existing = await target.findOne({ _id: record._id });
-      if (existing && !isDeepStrictEqual(existing, document)) {
+      if (existing && !isDeepStrictEqual(legacyComparable(existing), document)) {
         throw new Error("Migration conflict: existing submission differs; legacy record preserved.");
       }
       await target.updateOne({ _id: record._id }, { $setOnInsert: document }, { upsert: true });
-      if (!isDeepStrictEqual(await target.findOne({ _id: record._id }), document)) {
+      if (!isDeepStrictEqual(legacyComparable(await target.findOne({ _id: record._id })), document)) {
         throw new Error("Migration verification failed; legacy record preserved.");
       }
       copied++;

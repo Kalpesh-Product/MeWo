@@ -1,8 +1,7 @@
 import { createHash } from "node:crypto";
-import { Readable } from "node:stream";
-import { pipeline } from "node:stream/promises";
-import { GridFSBucket, MongoServerError, ObjectId, type Db } from "mongodb";
-import { collections, presentationBucket } from "./mongo-schema";
+import { MongoServerError, ObjectId, type Db } from "mongodb";
+import { collections } from "./mongo-schema";
+import { deleteAttachment, uploadAttachment } from "./s3-attachments.mjs";
 import { InquiryError, type Inquiry, type Presentation } from "./inquiry-validation";
 
 const WINDOW_MS = 15 * 60 * 1000;
@@ -47,16 +46,14 @@ export async function saveInquiry(db: Db, inquiry: Inquiry, attachment?: Present
     await db.collection(collections.submissions).insertOne({ ...base, fields: { ...fields, subject: inquiry.subject } });
     return;
   }
-  const bucket = new GridFSBucket(db, { bucketName: presentationBucket });
-  let presentation;
-  if (attachment) {
-    const upload = bucket.openUploadStream(attachment.filename, {
-      metadata: { submissionId: _id, mimeType: attachment.mimeType, sha256: attachment.sha256 },
-    });
-    try { await pipeline(Readable.from(attachment.bytes), upload); }
-    catch (error) { await upload.abort().catch(() => {}); throw error; }
-    presentation = { fileId: upload.id, filename: attachment.filename, mimeType: attachment.mimeType, size: attachment.size, sha256: attachment.sha256 };
-  }
+  const presentation = attachment ? {
+    fileId: _id,
+    filename: attachment.filename,
+    mimeType: attachment.mimeType,
+    size: attachment.size,
+    sha256: attachment.sha256,
+    presentationLink: await uploadAttachment(_id.toHexString(), attachment.filename, attachment.mimeType, attachment.bytes),
+  } : undefined;
   try {
     await db.collection(collections.submissions).insertOne({
       ...base, fields: { ...fields, startupName: inquiry.startup_name, websiteUrl: inquiry.website_url,
@@ -66,7 +63,7 @@ export async function saveInquiry(db: Db, inquiry: Inquiry, attachment?: Present
     if (presentation) {
       // A timeout may follow a committed write; check before deleting the file.
       try {
-        if (!await db.collection(collections.submissions).findOne({ _id })) await bucket.delete(presentation.fileId);
+        if (!await db.collection(collections.submissions).findOne({ _id })) await deleteAttachment(presentation.presentationLink);
       } catch { /* Leave the private file intact if MongoDB is unavailable. */ }
     }
     throw error;

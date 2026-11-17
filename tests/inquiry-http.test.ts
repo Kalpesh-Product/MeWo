@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { loadEnvConfig } from "@next/env";
 import { test } from "node:test";
-import { GridFSBucket, MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
 import { mongoConfig } from "../lib/server/mongo-config";
-import { collections, presentationBucket } from "../lib/server/mongo-schema";
+import { collections } from "../lib/server/mongo-schema";
+import { deleteAttachment } from "../lib/server/s3-attachments.mjs";
 
 test("live form endpoint saves to local MongoDB and returns correct errors", async (t) => {
   loadEnvConfig(process.cwd(), true);
@@ -16,6 +17,7 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
   const db = client.db(config.database);
   const email = `mewo-http-${randomUUID()}@example.com`;
   const started = Date.now();
+  const testUpload = process.env.TEST_S3_UPLOAD === "1";
   async function submit(kind: string, fields: Record<string, string> = {}, file?: File) {
     const data = new FormData();
     for (const [name, value] of Object.entries({ kind, name: "Backend HTTP verification", email, phone: "+91 80071 26444", message: "Temporary automated verification", ...fields })) data.set(name, value);
@@ -26,7 +28,7 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
     await t.test("contact, startup and duplicate newsletter submissions persist", async () => {
       const contact = await submit("contact", { subject: "Verification" });
       assert.equal(contact.status, 201, await contact.text());
-      const startup = await submit("startup", { startup_name: "Test Startup", website_url: "https://example.com" }, new File(["%PDF-1.7\nTemporary test"], "verification.pdf", { type: "application/pdf" }));
+      const startup = await submit("startup", { startup_name: "Test Startup", website_url: "https://example.com" }, testUpload ? new File(["%PDF-1.7\nTemporary test"], "verification.pdf", { type: "application/pdf" }) : undefined);
       assert.equal(startup.status, 201, await startup.text());
       for (let i = 0; i < 2; i++) {
         const subscription = await submit("subscription");
@@ -36,7 +38,8 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
         assert.equal(await db.collection(collections.submissions).countDocuments({ source, "fields.email": email }), 1);
       }
       const record = await db.collection(collections.submissions).findOne({ source: "startup", "fields.email": email });
-      assert.ok(record?.fields.presentation.fileId);
+      if (testUpload) assert.ok(record?.fields.presentation.presentationLink);
+      else assert.equal(record?.fields.presentation, undefined);
     });
     await t.test("read API rejects unauthenticated requests and unapproved browser origins", async () => {
       const endpoint = "http://localhost:3012/api/submissions";
@@ -71,8 +74,13 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
         assert.equal(row._id, undefined);
         assert.ok(!Number.isNaN(Date.parse(row.createdAt)));
       }
-      assert.equal(rows[1].presentation.filename, "verification.pdf");
-      assert.equal(rows[1].presentation.sha256, undefined);
+      if (testUpload) {
+        assert.equal(rows[1].presentation.filename, "verification.pdf");
+        assert.ok(rows[1].presentation.presentationLink);
+        assert.equal(rows[1].presentation.sha256, undefined);
+      } else {
+        assert.equal(rows[1].presentation, null);
+      }
       assert.equal(rows[2].name, null);
       const filtered = await (await fetch(`${endpoint}?${new URLSearchParams({ search: email, source: "startup", status: "new" })}`, { headers })).json();
       assert.equal(filtered.pagination.filteredTotal, 1);
@@ -114,9 +122,8 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
       assert.equal(await db.collection(collections.submissions).countDocuments({ source: "contact", "fields.email": email }), 5);
     });
   } finally {
-    const bucket = new GridFSBucket(db, { bucketName: presentationBucket });
     for await (const record of db.collection(collections.submissions).find({ source: "startup", "fields.email": email })) {
-      if (record.fields.presentation?.fileId) await bucket.delete(record.fields.presentation.fileId);
+      if (record.fields.presentation?.presentationLink) await deleteAttachment(record.fields.presentation.presentationLink);
     }
     await db.collection(collections.submissions).deleteMany({ "fields.email": email });
     const window = 15 * 60 * 1000;
