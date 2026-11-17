@@ -2,7 +2,7 @@
 
 `GET http://localhost:3012/api/submissions`
 
-Reads all three form sources from `mewo.submissions`. No database credentials are shared. No create, update, delete or attachment-download operations are exposed here.
+Reads the three flat form collections `mewo.contact_submissions`, `mewo.startup_submissions`, and `mewo.newsletter_subscriptions`. Each stored record includes `sourceCompany: "MeWo"`. No database credentials are shared. No create, update, delete or attachment-download operations are exposed here.
 
 ## Authentication and deployment
 
@@ -100,4 +100,4 @@ Errors return `{ "message": "..." }`: 400 invalid query, 401 invalid credentials
 
 ### Presentation storage
 
-Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in the server's `.env` to enable presentation uploads. The S3 prefix is `wono/BizNest/New MeWo Website/Attachments/` in `wonov-aws-s3-storage`. The API returns the private object URL as `presentation.presentationLink`. Legacy presentations have a null link until copied. Run `npx tsx scripts/migrate-presentations.ts` to count eligible records, and add `--apply` to copy validated files and save their links. The migration keeps the original GridFS objects.
+Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` in the server's `.env` to enable presentation uploads. The S3 prefix is `wono/BizNest/New MeWo Website/Attachments/` in `wonov-aws-s3-storage`. The API returns the private object URL as `presentation.presentationLink`. Previously stored presentations have been copied to S3; any future legacy record has a null link until copied. Run `npx tsx scripts/migrate-presentations.ts` to count eligible records, and add `--apply` to copy validated files and save their links. After verifying every S3 object, `npx tsx scripts/cleanup-legacy-gridfs.ts` makes a private BSON-aware backup and removes the old GridFS collections.

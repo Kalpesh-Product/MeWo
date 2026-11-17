@@ -11,11 +11,11 @@ async function main() {
   const client = new MongoClient(uri, options);
   try {
     const db = client.db(database);
-    const submissions = db.collection(collections.submissions);
+    const submissions = db.collection(collections.startup);
     const filter = {
       source: "startup",
-      "fields.presentation.fileId": { $type: "objectId" },
-      "fields.presentation.presentationLink": { $exists: false },
+      "presentation.fileId": { $type: "objectId" },
+      "presentation.presentationLink": { $exists: false },
     };
     if (!process.argv.includes("--apply")) {
       console.log(await submissions.countDocuments(filter), "presentations eligible for S3 migration. Add --apply to migrate.");
@@ -25,8 +25,9 @@ async function main() {
     await initializeDatabase(db);
     const bucket = new GridFSBucket(db, { bucketName: presentationBucket });
     let migrated = 0;
-    for await (const record of submissions.find(filter, { projection: { "fields.presentation": 1 } })) {
-      const { fileId, filename, mimeType, size, sha256 } = record.fields.presentation;
+    for await (const record of submissions.find(filter, { projection: { "presentation": 1 } })) {
+      console.log("Reading one legacy GridFS presentation.");
+      const { fileId, filename, mimeType, size, sha256 } = record.presentation;
       if (!Number.isSafeInteger(size) || size < 1 || size > 10 * 1024 * 1024) throw new Error("Invalid stored file size.");
       const chunks: Buffer[] = [];
       const stream = bucket.openDownloadStream(fileId);
@@ -36,13 +37,16 @@ async function main() {
         if (length > size) throw new Error("Stored file exceeds recorded size.");
         chunks.push(chunk);
       }
+      console.log("Legacy GridFS read completed.");
       const bytes = Buffer.concat(chunks, length);
       if (length !== size || createHash("sha256").update(bytes).digest("hex") !== sha256) {
         throw new Error("Stored presentation checksum or size mismatch.");
       }
+      console.log("Uploading verified presentation to S3.");
       const link = await uploadAttachment(record._id.toHexString(), filename, mimeType, bytes);
-      const result = await submissions.updateOne({ _id: record._id, ...filter, "fields.presentation.fileId": fileId }, {
-        $set: { "fields.presentation.presentationLink": link },
+      console.log("S3 upload completed; saving link.");
+      const result = await submissions.updateOne({ _id: record._id, ...filter, "presentation.fileId": fileId }, {
+        $set: { "presentation.presentationLink": link },
       });
       migrated += result.modifiedCount;
     }
@@ -52,7 +56,7 @@ async function main() {
   }
 }
 
-main().catch(() => {
-  console.error("Presentation migration failed. Check MongoDB, legacy file integrity, and S3 credentials.");
+main().catch((error) => {
+  console.error("Presentation migration failed. Check MongoDB, legacy file integrity, and S3 credentials.", error instanceof Error ? error.name : "unknown error");
   process.exitCode = 1;
 });

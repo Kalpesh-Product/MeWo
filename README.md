@@ -33,31 +33,20 @@ The URI and database name are required; numeric settings have validated defaults
 
 Run `npm run db:setup` to create the database collections, validation rules and indexes. Setup is safe to repeat and does not replace existing records. The application also initializes missing collections/indexes on its first submission. The connection pool is reused between requests and development reloads; failed connections can be retried.
 
-All three existing forms submit multipart data to `POST /api/inquiry`. Their original fields and appearance are preserved. Every form submission is stored in the single `submissions` collection. `source` identifies the form (`contact`, `startup`, or `subscription`), while form-specific values are nested under `fields`:
-
-```javascript
-{
-  _id: ObjectId("..."),
-  source: "contact",
-  fields: { name: "Example", email: "example@example.com", phone: "+91 80071 26444", subject: "Enquiry", message: "Hello" },
-  status: "new",
-  createdAt: ISODate("..."),
-  updatedAt: ISODate("...")
-}
-```
+All three existing forms submit multipart data to `POST /api/inquiry`. Their original fields and appearance are preserved. Each form has its own collection. Answers and `sourceCompany: "MeWo"` are stored at the top level; only attachment details are nested.
 
 | Collection | Stored data |
 | --- | --- |
-| `submissions` | `source`, nested `fields`, `status`, `createdAt`, `updatedAt`. Contact fields: `name`, `email`, `phone`, `subject`, `message`. Startup fields additionally include `startupName`, `websiteUrl`, `linkedinProfileUrl` and optional `presentation`. Subscription fields contain `email`. |
-| `presentations.files` | Private GridFS attachment metadata, including submission ID, MIME type and SHA-256 checksum |
-| `presentations.chunks` | GridFS attachment bytes |
-| `submission_rate_limits` | Hashed per-email/form/window counters with an expiring TTL index |
+| `contact_submissions` | Contact form answers: `name`, `email`, `phone`, `subject`, `message` |
+| `startup_submissions` | Startup form answers, including `startupName`, `websiteUrl`, `linkedinProfileUrl` and optional nested `presentation` |
+| `newsletter_subscriptions` | Newsletter email |
+| `submission_rate_limits` | Temporary hashed abuse counters with an expiring TTL index |
 
-The rate-limit and GridFS collections are internal infrastructure; all form records share `submissions`. New enquiries have status `new` (other supported workflow values: `in_progress`, `resolved`). Newsletter emails are lowercase and unique within `source: "subscription"`; the same email can submit contact or startup enquiries independently. Repeated subscriptions succeed without creating duplicate records. Source-specific MongoDB JSON Schema validators provide a second validation layer, with indexes on source/status/date and nested email.
+Each record also stores `source`, `status`, `sourceCompany`, `createdAt`, and `updatedAt`. New enquiries have status `new` (other supported workflow values: `in_progress`, `resolved`). Newsletter emails are normalized and unique. Repeated subscriptions succeed without creating duplicate records. MongoDB JSON Schema validators provide a second validation layer.
 
-`npm run db:setup` also copies records from the previous three form collections into this structure, preserving IDs, timestamps and attachment references. It verifies each copied record and can be rerun. Nonempty legacy collections are retained as rollback copies; obsolete empty collections are removed. Conflicting target records stop migration without overwriting either record. Arbitrary existing collections are not automatically assigned replacement validators.
+Run `npm run db:setup` to validate and migrate old combined `submissions` records into the three form collections. The migration makes a private BSON-aware backup in ignored `.reference/mongodb-backups/`, verifies copied records, then removes the old combined collection. It is safe to rerun. Legacy GridFS files were migrated to S3, verified by checksum, privately backed up, and removed with `npx tsx scripts/cleanup-legacy-gridfs.ts`. Keep backups private because they contain submitted personal information and attachments.
 
-The API validates required fields, lengths, email/phone formats and HTTP(S) URLs. Presentations are optional, limited to 10 MB, and checked for PDF/PPT/PPTX extension, MIME and file signature. Files stay in MongoDB and have no public download URL. A missing/mismatched file or invalid form is rejected before any submission is saved. Request bodies are bounded while reading, even when `Content-Length` is absent. A hidden honeypot and an atomic limit of five accepted attempts per email/form per 15-minute window provide basic spam protection; counters expire automatically. The limit is per email, not per IP and is not a replacement for an edge-level abuse limit on a public deployment.
+The API validates required fields, lengths, email/phone formats and HTTP(S) URLs. Presentations are optional, limited to 10 MB, and checked for PDF/PPT/PPTX extension, MIME and file signature. Files are stored privately in S3 and their links are stored with the submission. A missing/mismatched file or invalid form is rejected before any submission is saved. Request bodies are bounded while reading, even when `Content-Length` is absent. A hidden honeypot and an atomic limit of five accepted attempts per email/form per 15-minute window provide basic spam protection; temporary counters expire automatically. The limit is per email, not per IP and is not a replacement for an edge-level abuse limit on a public deployment.
 
 Browser submissions must be same-origin. For a reverse proxy that changes the server-visible origin, explicitly set `MEWO_ALLOWED_ORIGINS` to a comma-separated allowlist of browser origins. The endpoint accepts only writes; there is no unauthenticated listing or file-download API. Responses include a request ID, and error logs omit submitted personal information and connection strings. A database outage returns 503 rather than a false success. Successful responses mean **stored in MongoDB**, not an email notification: no SMTP, CRM forwarding or newsletter marketing delivery is configured.
 
@@ -65,10 +54,10 @@ To inspect submissions locally, connect MongoDB Compass or `mongosh` to `mongodb
 
 ```javascript
 use mewo
-db.submissions.find({ source: "contact" }).sort({ createdAt: -1 })
-db.submissions.find({ source: "startup" }).sort({ createdAt: -1 })
-db.submissions.find({ source: "subscription" }).sort({ createdAt: -1 })
-db.submissions.find({ "fields.email": "example@example.com" })
+db.contact_submissions.find({}).sort({ createdAt: -1 })
+db.startup_submissions.find({}).sort({ createdAt: -1 })
+db.newsletter_subscriptions.find({}).sort({ createdAt: -1 })
+db.contact_submissions.find({ email: "example@example.com" })
 ```
 
 For deployment, set an authenticated database URI with access restricted to this app's database, keep credentials server-side, and configure backups. Do not put MongoDB credentials in `NEXT_PUBLIC_` variables. An authenticated staff interface can be added separately.

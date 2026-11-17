@@ -35,11 +35,11 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
         assert.equal(subscription.status, 200, await subscription.text());
       }
       for (const source of ["contact", "startup", "subscription"]) {
-        assert.equal(await db.collection(collections.submissions).countDocuments({ source, "fields.email": email }), 1);
+        assert.equal(await db.collection(source === "contact" ? collections.contact : source === "startup" ? collections.startup : collections.subscription).countDocuments({ email }), 1);
       }
-      const record = await db.collection(collections.submissions).findOne({ source: "startup", "fields.email": email });
-      if (testUpload) assert.ok(record?.fields.presentation.presentationLink);
-      else assert.equal(record?.fields.presentation, undefined);
+      const record = await db.collection(collections.startup).findOne({ email });
+      if (testUpload) assert.ok(record?.presentation.presentationLink);
+      else assert.equal(record?.presentation, undefined);
     });
     await t.test("read API rejects unauthenticated requests and unapproved browser origins", async () => {
       const endpoint = "http://localhost:3012/api/submissions";
@@ -70,6 +70,7 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
       assert.deepEqual(rows.map((row) => row.source), ["contact", "startup", "subscription"]);
       for (const row of rows) {
         assert.equal(row.email, email);
+        assert.equal(row.sourceCompany, "MeWo");
         assert.equal(row.fields, undefined);
         assert.equal(row._id, undefined);
         assert.ok(!Number.isNaN(Date.parse(row.createdAt)));
@@ -103,11 +104,11 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
     await t.test("invalid fields and attachments do not insert records", async () => {
       assert.equal((await submit("contact", { phone: "bad" })).status, 422);
       assert.equal((await submit("startup", {}, new File(["not a pdf"], "bad.pdf"))).status, 415);
-      assert.equal(await db.collection(collections.submissions).countDocuments({ "fields.email": email }), 3);
+      assert.equal(await Promise.all([collections.contact, collections.startup, collections.subscription].map(name => db.collection(name).countDocuments({ email }))).then(counts => counts.reduce((sum, count) => sum + count, 0)), 3);
     });
     await t.test("honeypot submissions do not insert records", async () => {
       assert.equal((await submit("contact", { fax_number: "bot" })).status, 202);
-      assert.equal(await db.collection(collections.submissions).countDocuments({ source: "contact", "fields.email": email }), 1);
+      assert.equal(await db.collection(collections.contact).countDocuments({ email }), 1);
     });
     await t.test("cross-origin writes, JSON bodies and public reads are rejected", async () => {
       assert.equal((await fetch("http://localhost:3012/api/inquiry", { method: "POST", headers: { Origin: "https://unrelated.example" } })).status, 403);
@@ -119,13 +120,13 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
       const limited = await submit("contact");
       assert.equal(limited.status, 429);
       assert.ok(Number(limited.headers.get("Retry-After")) > 0);
-      assert.equal(await db.collection(collections.submissions).countDocuments({ source: "contact", "fields.email": email }), 5);
+      assert.equal(await db.collection(collections.contact).countDocuments({ email }), 5);
     });
   } finally {
-    for await (const record of db.collection(collections.submissions).find({ source: "startup", "fields.email": email })) {
-      if (record.fields.presentation?.presentationLink) await deleteAttachment(record.fields.presentation.presentationLink);
+    for await (const record of db.collection(collections.startup).find({ email })) {
+      if (record.presentation?.presentationLink) await deleteAttachment(record.presentation.presentationLink);
     }
-    await db.collection(collections.submissions).deleteMany({ "fields.email": email });
+    for (const name of [collections.contact, collections.startup, collections.subscription]) await db.collection(name).deleteMany({ email });
     const window = 15 * 60 * 1000;
     const keys: string[] = [];
     for (const kind of ["contact", "startup", "subscription"]) {
