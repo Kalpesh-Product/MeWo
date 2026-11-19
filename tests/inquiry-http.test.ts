@@ -101,6 +101,48 @@ test("live form endpoint saves to local MongoDB and returns correct errors", asy
       assert.equal((await fetch(`${endpoint}?sortBy=$where`, { headers })).status, 400);
       assert.equal((await fetch(`${endpoint}?pageSize=101`, { headers })).status, 400);
     });
+    await t.test("patch edits all three sources using their listed IDs", async () => {
+      assert.ok(process.env.MEWO_SUBMISSIONS_WRITE_API_KEY, "Configure the write API key before running HTTP tests.");
+      const endpoint = "http://localhost:3012/api/submissions";
+      const readAuth = "Bearer " + process.env.MEWO_SUBMISSIONS_API_KEY;
+      const writeAuth = "Bearer " + process.env.MEWO_SUBMISSIONS_WRITE_API_KEY;
+      const listed = await fetch(endpoint + "?search=" + encodeURIComponent(email), { headers: { Authorization: readAuth } });
+      assert.equal(listed.status, 200);
+      const {data} = await listed.json();
+      const find = (source: string) => data.find((row: {source: string}) => row.source === source);
+      const contact = find("contact"), startup = find("startup"), subscription = find("subscription");
+      const patch = (source: string, id: string, edits: object, authorization = writeAuth) => fetch(endpoint + "/" + source + "/" + id, {
+        method: "PATCH", headers: { Authorization: authorization, "Content-Type": "application/json" }, body: JSON.stringify(edits),
+      });
+      assert.equal((await patch("contact", contact.id, { name: "Fixture edit" }, readAuth)).status, 401);
+      assert.equal((await patch("startup", contact.id, { name: "Fixture edit" })).status, 404);
+      assert.equal((await patch("contact", "not-an-id", { name: "Fixture edit" })).status, 400);
+      assert.equal((await patch("contact", contact.id, { phone: "broken" })).status, 400);
+      assert.equal((await patch("startup", startup.id, { websiteUrl: "javascript:alert(1)" })).status, 400);
+      assert.equal((await patch("startup", startup.id, { presentation: null })).status, 400);
+      assert.equal((await patch("subscription", subscription.id, { status: "resolved" })).status, 400);
+      assert.equal((await patch("contact", contact.id, {})).status, 400);
+      const opts = await fetch(endpoint + "/contact/" + contact.id, {
+        method: "OPTIONS", headers: { Origin: "http://localhost:3012", "Access-Control-Request-Method": "PATCH" },
+      });
+      assert.equal(opts.status, 204);
+      assert.match(opts.headers.get("access-control-allow-methods") ?? "", /PATCH/);
+      for (const [row, fields] of [
+        [contact, { status: "in_progress", subject: "Updated subject" }],
+        [startup, { startupName: "Updated startup" }],
+        [subscription, { status: "unsubscribed" }],
+      ] as const) {
+        const saved = await patch(row.source, row.id, fields);
+        assert.equal(saved.status, 200);
+        const {data: updated} = await saved.json();
+        assert.equal(updated.id, row.id);
+        assert.equal(updated.email, row.email);
+        assert.equal(updated.createdAt, row.createdAt);
+        assert.equal(updated.websiteUrl, row.websiteUrl);
+        assert.deepEqual(updated.presentation, row.presentation);
+        for (const [name, value] of Object.entries(fields)) assert.equal(updated[name], value);
+      }
+    });
     await t.test("invalid fields and attachments do not insert records", async () => {
       assert.equal((await submit("contact", { phone: "bad" })).status, 422);
       assert.equal((await submit("startup", {}, new File(["not a pdf"], "bad.pdf"))).status, 415);

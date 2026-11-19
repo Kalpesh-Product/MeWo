@@ -8,6 +8,7 @@ const origins = z.string().default("").transform((value) => value.split(",").map
       return ["http:", "https:"].includes(url.protocol) && url.origin === origin;
     } catch { return false; }
   }));
+const apiKey = z.union([z.literal(""), z.string().min(32).max(512)]).default("");
 const schema = z.object({
   MONGODB_URI: z.string().trim().regex(/^mongodb(?:\+srv)?:\/\//),
   MONGODB_DB: z.string().trim().regex(/^[a-zA-Z0-9_-]+$/),
@@ -16,7 +17,7 @@ const schema = z.object({
   MONGODB_CONNECT_TIMEOUT_MS: positiveInteger(5000, 300000),
   MONGODB_SOCKET_TIMEOUT_MS: positiveInteger(15000, 300000),
   MEWO_ALLOWED_ORIGINS: origins,
-  MEWO_SUBMISSIONS_API_KEY: z.union([z.literal(""), z.string().min(32).max(512)]).default(""),
+  MEWO_SUBMISSIONS_API_KEY: apiKey,
   MEWO_SUBMISSIONS_ALLOWED_ORIGINS: origins,
 });
 
@@ -29,4 +30,10 @@ export function serverEnv(environment: Record<string, string | undefined> = proc
     throw new Error(`Missing or invalid server environment variables: ${names.join(", ")}`);
   }
   return result.data;
+}
+
+export function submissionsWriteKey(environment: Record<string, string | undefined> = process.env) {
+  const key = apiKey.safeParse(environment.MEWO_SUBMISSIONS_WRITE_API_KEY);
+  if (!key.success) throw new Error("Invalid MEWO_SUBMISSIONS_WRITE_API_KEY.");
+  return key.data;
 }

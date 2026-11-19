@@ -26,6 +26,25 @@ export const inquirySchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("startup"), ...common, startup_name: optionalText(200), website_url: optionalUrl, linkedin_profile_url: optionalUrl }),
   z.object({ kind: z.literal("subscription"), email: common.email }),
 ]);
+const submissionEditSchemas = {
+  contact: z.strictObject({ ...common, subject: optionalText(200), status: z.enum(["new", "in_progress", "resolved"]) }).partial(),
+  startup: z.strictObject({
+    ...common, startupName: optionalText(200), websiteUrl: optionalUrl, linkedinProfileUrl: optionalUrl,
+    status: z.enum(["new", "in_progress", "resolved"]),
+  }).partial(),
+  subscription: z.strictObject({ email: common.email, status: z.enum(["subscribed", "unsubscribed"]) }).partial(),
+};
+
+export function parseSubmissionEdits(kind: keyof typeof submissionEditSchemas, value: unknown) {
+  const schema = submissionEditSchemas[kind];
+  const result = schema.safeParse(value);
+  if (!result.success) throw new InquiryError(result.error.issues[0]?.message || "Invalid submission edit.");
+  // Zod can supply defaults for omitted optional fields. Apply only explicitly supplied values.
+  const fields = Object.fromEntries(Object.entries(result.data).filter(([name]) => Object.hasOwn(value as object, name)));
+  if (!Object.keys(fields).length) throw new InquiryError("Send a non-empty JSON object.");
+  return fields;
+}
+
 export type Inquiry = z.infer<typeof inquirySchema>;
 export type Presentation = { filename: string; mimeType: string; size: number; sha256: string; bytes: Buffer };
 

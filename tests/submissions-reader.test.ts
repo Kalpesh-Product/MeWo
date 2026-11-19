@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseSubmissionsQuery, validReadToken } from "../lib/server/submissions-reader";
+import { parseSubmissionsQuery, validSubmissionsToken } from "../lib/server/submissions-reader";
 
 test("read API requires the exact bearer token and fails closed without a configured key", () => {
   const key = "a".repeat(64);
-  assert.equal(validReadToken(`Bearer ${key}`, key), true);
-  for (const header of [null, key, "Bearer wrong", `Bearer ${"a".repeat(513)}`]) assert.equal(validReadToken(header, key), false);
-  assert.equal(validReadToken("Bearer anything", ""), false);
+  assert.equal(validSubmissionsToken(`Bearer ${key}`, key), true);
+  for (const header of [null, key, "Bearer wrong", `Bearer ${"a".repeat(513)}`]) assert.equal(validSubmissionsToken(header, key), false);
+  assert.equal(validSubmissionsToken("Bearer anything", ""), false);
 });
 
 test("read query defaults and valid table pagination/sorting", () => {

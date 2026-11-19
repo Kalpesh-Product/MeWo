@@ -1,8 +1,8 @@
-# Submissions read API
+# Submissions list and edit API
 
 `GET http://localhost:3012/api/submissions`
 
-Reads the three flat form collections `mewo.contact_submissions`, `mewo.startup_submissions`, and `mewo.newsletter_subscriptions`. Each stored record includes `sourceCompany: "MeWo"`. No database credentials are shared. No create, update, delete or attachment-download operations are exposed here.
+Reads the three flat form collections `mewo.contact_submissions`, `mewo.startup_submissions`, and `mewo.newsletter_subscriptions`. Each stored record includes `sourceCompany: "MeWo"`. No database credentials are shared. Existing records can be edited through the PATCH endpoints below.
 
 ## Authentication and deployment
 
@@ -11,6 +11,30 @@ Send `Authorization: Bearer <MEWO_SUBMISSIONS_API_KEY>` on every GET. A random r
 `localhost` refers to the computer making the request. For a project on another machine or hosting service, use this application's reachable server address; use HTTPS in production. This change does not publish your local server to the internet.
 
 The recommended integration is **table UI → external project's authenticated backend → this API**. That backend must enforce its own user authorization. Browser requests from another origin are blocked by default. If a browser integration is needed, `MEWO_SUBMISSIONS_ALLOWED_ORIGINS` is a separate comma-separated allowlist of exact HTTP(S) origins with no trailing slashes. CORS never replaces the bearer key. Keep the permanent key on the backend even when configuring CORS.
+
+## Edit a submission
+
+Use the list row's `id` and `source`. The ID is the 24-character MongoDB ObjectId as returned by GET. The endpoint uses the short source names below.
+
+| Row `source` | Endpoint | Editable fields |
+| --- | --- | --- |
+| `contact` | `PATCH /api/submissions/contact/{id}` | `name`, `email`, `phone`, `subject`, `message`, `status` |
+| `startup` | `PATCH /api/submissions/startup/{id}` | `name`, `email`, `phone`, `message`, `startupName`, `websiteUrl`, `linkedinProfileUrl`, `status` |
+| `subscription` | `PATCH /api/submissions/subscription/{id}` | `email`, `status` |
+
+Send `Authorization: Bearer <MEWO_SUBMISSIONS_WRITE_API_KEY>` and `Content-Type: application/json` from the external project's backend. Use a separate server-side key. The existing read key authorizes only GET. A blank write key disables editing.
+
+Send only changed fields as a flat JSON object containing strings. Use `""` to clear an optional text field or URL. Contact and startup status can be `new`, `in_progress`, or `resolved`. Newsletter status can be `subscribed` or `unsubscribed`. IDs, source, timestamps and presentation attachments are managed by MeWo.
+
+```http
+PATCH /api/submissions/contact/507f1f77bcf86cd799439011
+Authorization: Bearer <MEWO_SUBMISSIONS_WRITE_API_KEY>
+Content-Type: application/json
+
+{"subject":"Workspace inquiry","status":"in_progress"}
+```
+
+Successful edits return `200` with `{ "data": { … } }` in the same row shape as GET. Invalid values return `400`. An ID in the wrong collection returns `404`. An edit that would duplicate a newsletter email returns `409`.
 
 ## Parameters
 
