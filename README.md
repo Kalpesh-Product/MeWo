@@ -25,17 +25,17 @@ The production website for **MeWo — Meetings & Co-Working**, a serviced work n
 
 ## 1. Features
 
-**Public pages**
+**Public Pages**
 
-| Path | Legacy alias | Content |
-| --- | --- | --- |
-| `/` | `/index.html` | Hero slideshow, amenities grid, membership teaser, press marquee |
-| `/about.html` | `/about` | Company story, goals, three workspace zones |
-| `/membership.html` | `/membership` | Six membership cards with detail dialogs |
-| `/gallery.html` | `/gallery` | Photo grid with keyboard-accessible lightbox |
-| `/press.html` | `/press` | Press clippings and quotes |
-| `/startup.html` | `/startup` | Startup support copy and the startup inquiry form |
-| `/contact.html` | `/contact` | Contact form, address block, embedded Google Map |
+| Path               | Legacy alias  | Content                                                          |
+| ------------------ | ------------- | ---------------------------------------------------------------- |
+| `/`                | `/index.html` | Hero slideshow, amenities grid, membership teaser, press marquee |
+| `/about.html`      | `/about`      | Company story, goals, three workspace zones                      |
+| `/membership.html` | `/membership` | Six membership cards with detail dialogs                         |
+| `/gallery.html`    | `/gallery`    | Photo grid with keyboard-accessible lightbox                     |
+| `/press.html`      | `/press`      | Press clippings and quotes                                       |
+| `/startup.html`    | `/startup`    | Startup support copy and the startup inquiry form                |
+| `/contact.html`    | `/contact`    | Contact form, address block, embedded Google Map                 |
 
 **Behaviour**
 
@@ -92,24 +92,24 @@ All settings are **server-side only**. Never prefix them with `NEXT_PUBLIC_`, an
 
 Copy `.env.example` to `.env` and adjust the values.
 
-| Variable | Required | Default | Purpose |
-| --- | --- | --- | --- |
-| `MONGODB_URI` | Yes | — | Connection string; must start with `mongodb://` or `mongodb+srv://` |
-| `MONGODB_DB` | Yes | — | Database name; letters, digits, `_` and `-` only |
-| `MONGODB_MAX_POOL_SIZE` | No | `10` | Connection pool size (1–1000) |
-| `MONGODB_SERVER_SELECTION_TIMEOUT_MS` | No | `5000` | Server selection timeout (1–300000) |
-| `MONGODB_CONNECT_TIMEOUT_MS` | No | `5000` | Connect timeout (1–300000) |
-| `MONGODB_SOCKET_TIMEOUT_MS` | No | `15000` | Socket timeout (1–300000) |
-| `MEWO_ALLOWED_ORIGINS` | No | empty | Extra comma-separated browser origins allowed to POST inquiries (no trailing slash) |
-| `MEWO_SUBMISSIONS_API_KEY` | No | empty | Bearer key for `GET /api/submissions`, 32–512 chars; blank disables the endpoint (503) |
-| `MEWO_SUBMISSIONS_ALLOWED_ORIGINS` | No | empty | Supplementary CORS allowlist for the read API (no trailing slash) |
-| `AWS_ACCESS_KEY_ID` | For uploads | — | S3 access key (`PROJECT_AWS_ACCESS_KEY` is also accepted) |
-| `AWS_SECRET_ACCESS_KEY` | For uploads | — | S3 secret key (`PROJECT_AWS_SECRET_KEY` is also accepted) |
-| `AWS_SESSION_TOKEN` | No | — | Temporary STS session token |
+| Variable                              | Required    | Default | Purpose                                                                                |
+| ------------------------------------- | ----------- | ------- | -------------------------------------------------------------------------------------- |
+| `MONGODB_URI`                         | Yes         | —       | Connection string; must start with `mongodb://` or `mongodb+srv://`                    |
+| `MONGODB_DB`                          | Yes         | —       | Database name; letters, digits, `_` and `-` only                                       |
+| `MONGODB_MAX_POOL_SIZE`               | No          | `10`    | Connection pool size (1–1000)                                                          |
+| `MONGODB_SERVER_SELECTION_TIMEOUT_MS` | No          | `5000`  | Server selection timeout (1–300000)                                                    |
+| `MONGODB_CONNECT_TIMEOUT_MS`          | No          | `5000`  | Connect timeout (1–300000)                                                             |
+| `MONGODB_SOCKET_TIMEOUT_MS`           | No          | `15000` | Socket timeout (1–300000)                                                              |
+| `MEWO_ALLOWED_ORIGINS`                | No          | empty   | Extra comma-separated browser origins allowed to POST inquiries (no trailing slash)    |
+| `MEWO_SUBMISSIONS_API_KEY`            | No          | empty   | Bearer key for `GET /api/submissions`, 32–512 chars; blank disables the endpoint (503) |
+| `MEWO_SUBMISSIONS_ALLOWED_ORIGINS`    | No          | empty   | Supplementary CORS allowlist for the read API (no trailing slash)                      |
+| `AWS_ACCESS_KEY_ID`                   | For uploads | —       | S3 access key (`PROJECT_AWS_ACCESS_KEY` is also accepted)                              |
+| `AWS_SECRET_ACCESS_KEY`               | For uploads | —       | S3 secret key (`PROJECT_AWS_SECRET_KEY` is also accepted)                              |
+| `AWS_SESSION_TOKEN`                   | No          | —       | Temporary STS session token                                                            |
 
 **Loading order:** process environment variables take precedence, followed by the applicable `.env.*` overrides and `.env` (`@next/env`). An optional `.env.local` overrides machine-specific values. Restart the dev server after editing env values.
 
-`lib/server/env.ts` validates everything with Zod and reports only the *names* of invalid settings — never their values. A malformed URI produces `Missing or invalid server environment variables: MONGODB_URI`.
+`lib/server/env.ts` validates everything with Zod and reports only the _names_ of invalid settings — never their values. A malformed URI produces `Missing or invalid server environment variables: MONGODB_URI`.
 
 ---
 
@@ -212,12 +212,12 @@ Request
 
 Collections are created with strict JSON Schema validators (`validationLevel: "strict"`, `validationAction: "error"`, `additionalProperties: false`) and indexes. Setup is safe to repeat and never replaces existing records.
 
-| Collection | Contents |
-| --- | --- |
-| `contact_submissions` | `name`, `email`, `phone`, `subject`, `message` |
-| `startup_submissions` | `name`, `email`, `phone`, `message`, `startupName`, `websiteUrl`, `linkedinProfileUrl`, optional `presentation` |
-| `newsletter_subscriptions` | `email` only |
-| `submission_rate_limits` | Hashed abuse counters with an expiring TTL index |
+| Collection                 | Contents                                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `contact_submissions`      | `name`, `email`, `phone`, `subject`, `message`                                                                  |
+| `startup_submissions`      | `name`, `email`, `phone`, `message`, `startupName`, `websiteUrl`, `linkedinProfileUrl`, optional `presentation` |
+| `newsletter_subscriptions` | `email` only                                                                                                    |
+| `submission_rate_limits`   | Hashed abuse counters with an expiring TTL index                                                                |
 
 Every record also carries `_id`, `source`, `sourceCompany: "MeWo"`, `status`, `createdAt` and `updatedAt`. Contact and startup rows start at status `new` (workflow values `new`, `in_progress`, `resolved`); newsletter rows use `subscribed` / `unsubscribed`.
 
@@ -236,12 +236,12 @@ Every record also carries `_id`, `source`, `sourceCompany: "MeWo"`, `status`, `c
 
 **Indexes**
 
-| Collection | Index |
-| --- | --- |
-| `contact_submissions` | `createdAt` desc; `email` |
-| `startup_submissions` | `createdAt` desc; `email` |
-| `newsletter_subscriptions` | `createdAt` desc; unique `email` |
-| `submission_rate_limits` | `expiresAt` TTL (`expireAfterSeconds: 0`) |
+| Collection                 | Index                                     |
+| -------------------------- | ----------------------------------------- |
+| `contact_submissions`      | `createdAt` desc; `email`                 |
+| `startup_submissions`      | `createdAt` desc; `email`                 |
+| `newsletter_subscriptions` | `createdAt` desc; unique `email`          |
+| `submission_rate_limits`   | `expiresAt` TTL (`expireAfterSeconds: 0`) |
 
 **Legacy migration.** `npm run db:setup` also migrates old combined `submissions` documents (with a nested `fields` object) into the three form collections. It writes a private EJSON/NDJSON backup into the Git-ignored `.reference/mongodb-backups/`, verifies every copied document, then drops the obsolete combined collection. Old per-form collections are retained for rollback.
 
@@ -253,11 +253,11 @@ Every record also carries `_id`, `source`, `sourceCompany: "MeWo"`, `status`, `c
 
 The browser posts `FormData`; the framework sets the multipart boundary. Fields per `kind`:
 
-| `kind` | Fields | Success |
-| --- | --- | --- |
-| `contact` | `name`, `email`, `phone`, `subject`, `message` | 201 |
-| `startup` | `name`, `email`, `phone`, `message`, `startup_name`, `website_url`, `linkedin_profile_url`, optional `presentation` | 201 |
-| `subscription` | `email` | 200 |
+| `kind`         | Fields                                                                                                              | Success |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- | ------- |
+| `contact`      | `name`, `email`, `phone`, `subject`, `message`                                                                      | 201     |
+| `startup`      | `name`, `email`, `phone`, `message`, `startup_name`, `website_url`, `linkedin_profile_url`, optional `presentation` | 201     |
+| `subscription` | `email`                                                                                                             | 200     |
 
 `fax_number` is a hidden honeypot; a filled value returns 202 with a success message and writes nothing.
 
@@ -271,17 +271,17 @@ The browser posts `FormData`; the framework sets the multipart boundary. Fields 
 
 **Responses**
 
-| Status | Meaning |
-| --- | --- |
-| 200 / 201 | Stored (newsletter / enquiry) |
-| 202 | Honeypot hit — accepted silently |
-| 400 | Malformed form data |
-| 403 | Browser `Origin` not allowed |
-| 413 | Body or attachment too large |
-| 415 | Wrong content type or file signature |
-| 422 | Field validation failed |
-| 429 | Rate limit — includes `Retry-After` |
-| 503 | Database or storage unavailable |
+| Status    | Meaning                              |
+| --------- | ------------------------------------ |
+| 200 / 201 | Stored (newsletter / enquiry)        |
+| 202       | Honeypot hit — accepted silently     |
+| 400       | Malformed form data                  |
+| 403       | Browser `Origin` not allowed         |
+| 413       | Body or attachment too large         |
+| 415       | Wrong content type or file signature |
+| 422       | Field validation failed              |
+| 429       | Rate limit — includes `Retry-After`  |
+| 503       | Database or storage unavailable      |
 
 Every response carries `Cache-Control: no-store` and `X-Request-Id`. Error logs include the request ID and error type only — never submitted values, attachment bytes or connection strings.
 
@@ -306,31 +306,31 @@ Errors: 400 invalid query, 401 missing/invalid key, 403 rejected origin, 503 unc
 
 ## 8. Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Next.js dev server on port 3012 (Turbopack) |
-| `npm run build` | Production build with webpack |
-| `npm start` | Serve the production build on port 3012 |
-| `npm run lint` | ESLint 9 flat config (`eslint-config-next` core-web-vitals + TypeScript) |
-| `npm run db:setup` | Create collections/validators/indexes and migrate legacy submissions |
-| `npm test` | Unit tests: validation, env, read-API query parsing |
-| `npm run test:integration` | MongoDB integration tests against an isolated throwaway database |
-| `npm run test:http` | HTTP smoke tests against a running server on port 3012 |
-| `npx tsx scripts/migrate-presentations.ts` | Count startup records still needing an S3 copy |
-| `npx tsx scripts/migrate-presentations.ts --apply` | Copy verified GridFS files to S3 and save links |
-| `npx tsx scripts/cleanup-legacy-gridfs.ts` | Re-verify every S3 object, back up GridFS privately, drop the old collections |
+| Command                                            | Description                                                                   |
+| -------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `npm run dev`                                      | Next.js dev server on port 3012 (Turbopack)                                   |
+| `npm run build`                                    | Production build with webpack                                                 |
+| `npm start`                                        | Serve the production build on port 3012                                       |
+| `npm run lint`                                     | ESLint 9 flat config (`eslint-config-next` core-web-vitals + TypeScript)      |
+| `npm run db:setup`                                 | Create collections/validators/indexes and migrate legacy submissions          |
+| `npm test`                                         | Unit tests: validation, env, read-API query parsing                           |
+| `npm run test:integration`                         | MongoDB integration tests against an isolated throwaway database              |
+| `npm run test:http`                                | HTTP smoke tests against a running server on port 3012                        |
+| `npx tsx scripts/migrate-presentations.ts`         | Count startup records still needing an S3 copy                                |
+| `npx tsx scripts/migrate-presentations.ts --apply` | Copy verified GridFS files to S3 and save links                               |
+| `npx tsx scripts/cleanup-legacy-gridfs.ts`         | Re-verify every S3 object, back up GridFS privately, drop the old collections |
 
 ---
 
 ## 9. Testing
 
-| File | Coverage | Requirements |
-| --- | --- | --- |
-| `tests/env.test.ts` | Defaults, overrides, rejects invalid limits/origins, error messages hide credentials | none |
-| `tests/inquiry-validation.test.ts` | Form schemas, duplicate fields, size caps, file signature checks | none |
-| `tests/submissions-reader.test.ts` | Bearer token comparison, query bounds, `kind`/`source` alias rules | none |
-| `tests/inquiry-storage.test.ts` | Persistence, rate limiting, newsletter uniqueness, read queries | MongoDB (`mewo_test_<random>` database, dropped afterwards) |
-| `tests/inquiry-http.test.ts` | Live endpoint statuses, read-API auth/CORS/pagination, cleanup of created records | Running server on 3012 + MongoDB + `MEWO_SUBMISSIONS_API_KEY` |
+| File                               | Coverage                                                                             | Requirements                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `tests/env.test.ts`                | Defaults, overrides, rejects invalid limits/origins, error messages hide credentials | none                                                          |
+| `tests/inquiry-validation.test.ts` | Form schemas, duplicate fields, size caps, file signature checks                     | none                                                          |
+| `tests/submissions-reader.test.ts` | Bearer token comparison, query bounds, `kind`/`source` alias rules                   | none                                                          |
+| `tests/inquiry-storage.test.ts`    | Persistence, rate limiting, newsletter uniqueness, read queries                      | MongoDB (`mewo_test_<random>` database, dropped afterwards)   |
+| `tests/inquiry-http.test.ts`       | Live endpoint statuses, read-API auth/CORS/pagination, cleanup of created records    | Running server on 3012 + MongoDB + `MEWO_SUBMISSIONS_API_KEY` |
 
 Set `TEST_S3_UPLOAD=1` when running the integration or HTTP suites to exercise real S3 uploads.
 
@@ -351,7 +351,7 @@ The HTTP suite asserts that the database URI points at `127.0.0.1`/`localhost:27
 2. **Provide secrets through the platform** (environment or secret manager): MongoDB URI/database, `MEWO_SUBMISSIONS_API_KEY`, S3 credentials and any allowed origins. Commit only `.env.example`.
 3. **Database**: use an authenticated URI scoped to this application's database, enable backups, and keep credentials server-side.
 4. **HTTPS and proxies**: browser submissions must be same-origin. If a reverse proxy rewrites the server-visible origin, list the browser origins explicitly in `MEWO_ALLOWED_ORIGINS` (exact origins, no trailing slash, no paths). Configure TLS termination at the proxy.
-5. **CORS for the read API**: leave `MEWO_SUBMISSIONS_ALLOWED_ORIGINS` empty unless a browser must call it. The recommended pattern is *table UI → external project's authenticated backend → this API*; CORS never replaces the bearer key.
+5. **CORS for the read API**: leave `MEWO_SUBMISSIONS_ALLOWED_ORIGINS` empty unless a browser must call it. The recommended pattern is _table UI → external project's authenticated backend → this API_; CORS never replaces the bearer key.
 6. **Storage**: uploads go to bucket `wonov-aws-s3-storage`, region `ap-south-1`, prefix `wono/BizNest/New MeWo Website/Attachments/`. Objects are private; the API returns the object URL for authorised consumers.
 7. **Spam controls**: the per-email limiter is not an edge guarantee. Add rate limiting/WAF at the proxy or CDN for a public deployment.
 
@@ -373,17 +373,17 @@ The HTTP suite asserts that the database URI points at `127.0.0.1`/`localhost:27
 
 ## 12. Troubleshooting
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| Forms return 503 | MongoDB or S3 unreachable, or credentials invalid | Check `MONGODB_URI`, network access and the server log's `X-Request-Id`; the app deliberately distinguishes outage from success |
-| `Missing or invalid server environment variables: …` | Missing/blank setting, bad URI scheme, database name with `/`, origin with a path or trailing slash | Fix the named variable and restart |
-| `GET /api/submissions` returns 503 | `MEWO_SUBMISSIONS_API_KEY` blank | Set a 32+ character key and restart |
-| 401 from the read API | Key mismatch, missing `Bearer ` prefix, or key longer than 512 chars | Re-copy the key; rotate by changing `.env` and updating clients |
-| 403 on a form POST | Origin not in the allowlist | Add the exact browser origin to `MEWO_ALLOWED_ORIGINS` |
-| 413 / 415 on the startup form | File over 10 MB, wrong extension, or contents not matching the extension | Re-export as PDF/PPT/PPTX under the size limit |
-| 429 on repeated tests | Per-email limit of 5 per 15 minutes | Wait for `Retry-After` or use a different test email |
-| First request is slow | Cold connection pool plus schema bootstrap | Expected; subsequent requests reuse the cached client |
-| Next dev rewrites `AGENTS.md` | `experimental.agentFeedback` is enabled and `next dev` regenerates its guidance blocks | Commit the file with your changes |
+| Symptom                                              | Likely cause                                                                                        | Fix                                                                                                                             |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Forms return 503                                     | MongoDB or S3 unreachable, or credentials invalid                                                   | Check `MONGODB_URI`, network access and the server log's `X-Request-Id`; the app deliberately distinguishes outage from success |
+| `Missing or invalid server environment variables: …` | Missing/blank setting, bad URI scheme, database name with `/`, origin with a path or trailing slash | Fix the named variable and restart                                                                                              |
+| `GET /api/submissions` returns 503                   | `MEWO_SUBMISSIONS_API_KEY` blank                                                                    | Set a 32+ character key and restart                                                                                             |
+| 401 from the read API                                | Key mismatch, missing `Bearer ` prefix, or key longer than 512 chars                                | Re-copy the key; rotate by changing `.env` and updating clients                                                                 |
+| 403 on a form POST                                   | Origin not in the allowlist                                                                         | Add the exact browser origin to `MEWO_ALLOWED_ORIGINS`                                                                          |
+| 413 / 415 on the startup form                        | File over 10 MB, wrong extension, or contents not matching the extension                            | Re-export as PDF/PPT/PPTX under the size limit                                                                                  |
+| 429 on repeated tests                                | Per-email limit of 5 per 15 minutes                                                                 | Wait for `Retry-After` or use a different test email                                                                            |
+| First request is slow                                | Cold connection pool plus schema bootstrap                                                          | Expected; subsequent requests reuse the cached client                                                                           |
+| Next dev rewrites `AGENTS.md`                        | `experimental.agentFeedback` is enabled and `next dev` regenerates its guidance blocks              | Commit the file with your changes                                                                                               |
 
 ---
 
