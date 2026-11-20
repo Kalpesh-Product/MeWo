@@ -82,7 +82,7 @@ npm run build
 npm start                  # also port 3012
 ```
 
-`npm run build` uses webpack (`next build --webpack`); `next dev` uses Turbopack with the Tailwind v4 loader configured in `next.config.ts`.
+`npm run build` and `next dev` both use Turbopack, with the Tailwind v4 loader configured in `next.config.ts`.
 
 ---
 
@@ -309,7 +309,7 @@ Errors: 400 invalid query, 401 missing/invalid key, 403 rejected origin, 503 unc
 | Command                                            | Description                                                                   |
 | -------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `npm run dev`                                      | Next.js dev server on port 3012 (Turbopack)                                   |
-| `npm run build`                                    | Production build with webpack                                                 |
+| `npm run build`                                    | Production build with Turbopack                                               |
 | `npm start`                                        | Serve the production build on port 3012                                       |
 | `npm run lint`                                     | ESLint 9 flat config (`eslint-config-next` core-web-vitals + TypeScript)      |
 | `npm run db:setup`                                 | Create collections/validators/indexes and migrate legacy submissions          |
